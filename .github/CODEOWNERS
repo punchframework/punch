@@ -1,0 +1,4 @@
+# What builds and publishes Punch.
+/.github/   @lagr
+/packaging/ @lagr
+/scripts/   @lagr

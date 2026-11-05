@@ -4,6 +4,9 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: read
+
 env:
   CRYSTAL_WORKERS: "4"
 
@@ -16,17 +19,17 @@ jobs:
         os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Read toolchain pin
         id: pin
         run: cat toolchain.env | grep -v '^#' >> "$GITHUB_OUTPUT"
-      - uses: crystal-lang/install-crystal@v1
+      - uses: crystal-lang/install-crystal@46e48b6238ee23b1a6ef08ec39f12fb234676006 # v1.9.3
         with:
           crystal: ${{ steps.pin.outputs.CRYSTAL_VERSION }}
       # libxml2 for HTML matchers in spec binaries (Punch::Spec).
       - if: runner.os == 'Linux'
         run: sudo apt-get install -y libxml2-dev
-      - uses: actions/cache@v4
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: |
             lib
@@ -38,7 +41,7 @@ jobs:
       - run: shards install
         working-directory: reference
       - run: scripts/check.sh
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: build-stats-${{ matrix.os }}
@@ -51,11 +54,11 @@ jobs:
     name: punch new (three apps)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Read toolchain pin
         id: pin
         run: cat toolchain.env | grep -v '^#' >> "$GITHUB_OUTPUT"
-      - uses: crystal-lang/install-crystal@v1
+      - uses: crystal-lang/install-crystal@46e48b6238ee23b1a6ef08ec39f12fb234676006 # v1.9.3
         with:
           crystal: ${{ steps.pin.outputs.CRYSTAL_VERSION }}
       - run: sudo apt-get install -y libxml2-dev
@@ -67,8 +70,8 @@ jobs:
     name: check (ubuntu-latest, nightly compiler)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: crystal-lang/install-crystal@v1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: crystal-lang/install-crystal@46e48b6238ee23b1a6ef08ec39f12fb234676006 # v1.9.3
         with:
           crystal: nightly
       - run: sudo apt-get install -y libxml2-dev
