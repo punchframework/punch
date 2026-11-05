@@ -403,7 +403,7 @@ describe Punch::Upload do
     end
 
     it "has extensions for every type Punch takes" do
-      Punch::Upload::EXTENSIONS.keys.sort.should eq(Punch::Upload::TYPE_NAMES.sort)
+      Punch::Upload::EXTENSIONS.keys.sort!.should eq(Punch::Upload::TYPE_NAMES.sort)
     end
   end
 
@@ -626,7 +626,7 @@ describe Punch::Upload do
   end
 
   it "forgets an expired upload's name even when the storage cannot be reached" do
-    UploadSpec.with_db do |storage|
+    UploadSpec.with_db do
       name = Punch::Upload::Filename.parse("Sick note Ada.pdf").as(Punch::Upload::Filename)
       past = Time.utc - 2.hours
       Punch::Spec.db.write do |db|

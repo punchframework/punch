@@ -169,8 +169,18 @@ module Punch::QueryGen
           end
         end
       end
+      composites = by_name(calls.map(&.first), errors)
+      calls.each { |composite, call| arguments(composite, call, composites, errors) if composites[composite.name]? == composite }
+      composites.each_value { |composite| link_members(composite, composites, errors) }
+      composites.each_value { |composite| check_cycle(composite, composites, errors) }
+      composites.each_value { |composite| check_depth(composite, composites, errors) } if errors.empty?
+      composites
+    end
+
+    # *declared* by name; a name declared twice is an error.
+    private def self.by_name(declared : Array(Composite), errors : Array(Error)) : Hash(String, Composite)
       composites = {} of String => Composite
-      calls.each do |composite, _|
+      declared.each do |composite|
         if other = composites[composite.name]?
           errors << Error.new(composite.location, "#{composite.name} is declared twice; the other is at #{other.location}")
         else
@@ -179,10 +189,6 @@ module Punch::QueryGen
           composite.grouped = true if composite.file == OWN_PATH
         end
       end
-      calls.each { |composite, call| arguments(composite, call, composites, errors) if composites[composite.name]? == composite }
-      composites.each_value { |composite| link_members(composite, composites, errors) }
-      composites.each_value { |composite| check_cycle(composite, composites, errors) }
-      composites.each_value { |composite| check_depth(composite, composites, errors) } if errors.empty?
       composites
     end
 
