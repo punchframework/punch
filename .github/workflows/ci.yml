@@ -1,11 +1,25 @@
+# A push or pull request checks one target. Every target, and the nightly
+# compiler, are checked when a release is published, once a day, and on
+# demand (Actions, Run workflow).
 name: CI
 
 on:
   push:
+    branches: [main]
   pull_request:
+  release:
+    types: [published]
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
 
 permissions:
   contents: read
+
+# A newer run replaces an older one of the same kind on the same ref.
+concurrency:
+  group: ci-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   CRYSTAL_WORKERS: "4"
@@ -16,7 +30,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest]
+        os: ${{ fromJSON((github.event_name == 'push' || github.event_name == 'pull_request') && '["ubuntu-latest"]' || '["ubuntu-latest", "ubuntu-24.04-arm", "macos-latest"]') }}
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -69,6 +83,7 @@ jobs:
 
   nightly:
     name: check (ubuntu-latest, nightly compiler)
+    if: github.event_name != 'push' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
