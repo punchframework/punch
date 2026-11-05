@@ -8352,8 +8352,8 @@
             }
           }
         },
-        "summary": "Sends a draft: it gets the next invoice number, is due after the payment term, and keeps who it bills as the customer is now.",
-        "description": "Sends a draft: it gets the next invoice number, is due after the\npayment term, and keeps who it bills as the customer is now. Only a draft with lines can be sent. Each user sends at\nmost 30 an hour, since each one mails a customer (`MailInvoice`).\nA client must name each attempt with an idempotency key, so a retry\nafter a lost answer gets that answer instead of `already_sent`."
+        "summary": "Sends a draft: it gets the next invoice number and is due after the payment term, and it keeps the customer's name and address as they are now.",
+        "description": "Sends a draft: it gets the next invoice number and is due after the\npayment term, and it keeps the customer's name and address as they\nare now. Only a draft with lines can be sent. Each user sends at most\n30 an hour, since each one mails a customer (`MailInvoice`). A client\nmust name each attempt with an idempotency key, so a retry after a\nlost answer gets that answer instead of `already_sent`."
       }
     },
     "/billing/invoices/{token}/shared": {
