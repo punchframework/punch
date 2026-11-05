@@ -63,6 +63,7 @@ jobs:
           crystal: ${{ steps.pin.outputs.CRYSTAL_VERSION }}
       - run: sudo apt-get install -y libxml2-dev
       - run: shards install
+      - run: mkdir -p tmp/punch-check
       - run: crystal build src/cli/main.cr -o tmp/punch-check/punch
       - run: scripts/new-apps.sh "$RUNNER_TEMP/apps"
 

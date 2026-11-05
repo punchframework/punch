@@ -1,6 +1,5 @@
 require "db"
 require "sqlite3"
-require "c/sys/uio"
 require "../text"
 
 # The vendored SQLite: linking a Punch binary runs the build script, which
@@ -17,6 +16,12 @@ require "../text"
     alias Function = (LibSQLite3::SQLite3Context, Int32, LibSQLite3::SQLite3Value*) -> Nil
     alias Extension = (LibSQLite3::SQLite3, UInt8**, Void*) -> Int32
     alias WalHook = (Void*, LibSQLite3::SQLite3, UInt8*, Int32) -> Int32
+
+    # A blob element of `carray`, laid out as C's `struct iovec`.
+    struct Blob
+      data : Void*
+      size : LibC::SizeT
+    end
 
     fun libversion = sqlite3_libversion : UInt8*
     fun sourceid = sqlite3_sourceid : UInt8*
@@ -105,7 +110,7 @@ module Punch
           pointers = values.map(&.to_unsafe)
           LibPunchSQLite.carray_bind_v2(statement, index, pointers.to_unsafe.as(Void*), values.size, 3, transient, nil)
         in Array(Bytes)
-          vectors = values.map { |bytes| LibC::Iovec.new(iov_base: bytes.to_unsafe.as(Void*), iov_len: LibC::SizeT.new(bytes.size)) }
+          vectors = values.map { |bytes| LibPunchSQLite::Blob.new(data: bytes.to_unsafe.as(Void*), size: LibC::SizeT.new(bytes.size)) }
           LibPunchSQLite.carray_bind_v2(statement, index, vectors.to_unsafe.as(Void*), values.size, 4, transient, nil)
         end
       end
