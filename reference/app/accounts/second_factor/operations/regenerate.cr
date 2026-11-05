@@ -1,0 +1,21 @@
+module Accounts::SecondFactor
+  # Replaces the recovery codes: the old ones stop working, the new ones
+  # show on the account page until `Seen`. Needs a recent authentication.
+  @[Punch::Authorize(Punch::RecentlyAuthenticated)]
+  @[Punch::RateLimit(10, per: 1.hour, by: :actor)]
+  struct Regenerate < Punch::Command
+    struct Input
+      include Punch::Input
+    end
+
+    alias Output = CodesReplaced | NotSetUp
+
+    def call(input : Input, db : Punch::Writer, actor : Invoicing::Actor, _grant : Punch::Grant(Regenerate),
+             events : Punch::Events(Punch::Auth::SecondFactorChanged)) : Output
+      return NotSetUp.new unless Punch::Auth::SecondFactors.regenerate(db, actor.user.id)
+
+      events.publish(Punch::Auth::SecondFactorChanged.new(actor.user.id.value, :recovery_codes))
+      CodesReplaced.new
+    end
+  end
+end

@@ -1,0 +1,25 @@
+# Caddy in front of the app on one machine, with systemd (lib/punch/docs/deployment.md).
+# Caddy terminates TLS and speaks HTTP/2 to browsers; the app listens on
+# two local ports, one at a time except during a deploy (deploy.sh). Caddy
+# sends everything to the first healthy one, and retries a request whose
+# connection could not be made on the other.
+<%= app.name %>.example.org {
+	encode zstd gzip
+
+	reverse_proxy 127.0.0.1:3000 127.0.0.1:3001 {
+		lb_policy first
+		# A refused connection (a process gone or not yet listening) is
+		# tried again on the other port for up to 10 s.
+		lb_try_duration 10s
+		lb_try_interval 100ms
+
+		# /up turns 503 the moment a process starts to drain. It keeps
+		# accepting for PUNCH_DRAIN_DELAY_SECONDS (3 in the unit), so the
+		# next check, within a second, takes it out of rotation first.
+		health_uri /up
+		health_interval 1s
+		health_timeout 2s
+		health_fails 1
+		health_passes 1
+	}
+}

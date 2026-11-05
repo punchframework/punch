@@ -1,0 +1,35 @@
+# Ameba configuration for Punch. Defaults apply unless listed here.
+# Punch's own rules live in src/punch/ameba/ (docs/reference/lint-rules.md).
+Globs:
+  - "src/**/*.cr"
+  - "spec/**/*.cr"
+# Files that must fail to compile, checked by spec/core/compile_errors_spec.cr.
+Excluded:
+  - "spec/fail/**"
+  - "spec/lint/fixtures/**"
+  - "spec/lint/fixtures/**/*.cr"
+
+# The generator fixture is an app's source tree: its file names are not specs.
+Lint/SpecFilename:
+  Excluded:
+    - "spec/query_gen/fixture/**/*.cr"
+    - "spec/openapi/fixture/**/*.cr"
+    - "spec/cli/fixture/**/*.cr"
+    - "spec/jobs/fixture/**/*.cr"
+    - "spec/i18n/fixture/**/*.cr"
+
+# The generator's fixture is a tree of named queries, not an app's domain.
+Punch/NamespaceFile:
+  Excluded:
+    - "spec/query_gen/fixture/**/*.cr"
+
+# Punch's specs check that the macros read whatever `call` declares, so
+# their operations return any type; the rule is for apps.
+Punch/OperationOutput:
+  Excluded:
+    - "spec/**/*.cr"
+
+# Punch's specs check the hashing functions underneath PasswordCheck.
+Punch/PasswordCheck:
+  Excluded:
+    - "spec/**/*.cr"

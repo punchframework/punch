@@ -1,0 +1,13 @@
+# The versions the texts in this folder were taken from, and the Alpine
+# package each one is checked against in the release build
+# (packaging/notices.sh). A new build image with other versions fails the
+# build until the texts are checked and these lines moved.
+#
+# component  version  alpine-package (- for the compiler)  file
+crystal      1.22.0   -               crystal-LICENSE.txt crystal-NOTICE.md
+openssl      3.5.9    openssl-libs-static openssl.txt
+pcre2        10.49    pcre2           pcre2.md
+gc           8.2.12   gc              gc.md
+libyaml      0.2.5    yaml            libyaml.txt
+zlib         1.3.2    zlib            zlib.txt
+musl         1.2.6    musl            musl.txt

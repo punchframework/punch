@@ -1,0 +1,33 @@
+name: punch
+version: 0.1.0
+
+description: |
+  A SQLite-first, single-node web application framework for Crystal.
+
+crystal: ">= 1.22.0"
+license: MIT
+
+targets:
+  punch:
+    main: src/cli/main.cr
+
+dependencies:
+  db:
+    github: crystal-lang/crystal-db
+    version: ~> 0.14.0
+  sqlite3:
+    github: crystal-lang/crystal-sqlite3
+    version: ~> 0.23.0
+  # Mail: crystal-email under Punch's SMTP adapter.
+  email:
+    github: arcage/crystal-email
+    version: ~> 0.7.1
+
+development_dependencies:
+  # For the specs of src/punch/mail/carbon.cr, which apps opt in to.
+  carbon:
+    github: luckyframework/carbon
+    version: ~> 0.6.1
+  ameba:
+    github: crystal-ameba/ameba
+    version: ~> 1.7.0

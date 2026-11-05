@@ -1,0 +1,26 @@
+# Die Texte der App auf Deutsch; die des Konto-Bereichs in accounts/de.yml.
+de:
+  home:
+    title: "Willkommen"
+    intro: "Sie sind angemeldet. Hier beginnt Ihre App: legen Sie mit `punch generate` ihre erste Entität an."
+  layout:
+    main: "Hauptmenü"
+    home: "Start"
+    ops: "Betrieb"
+    signed_in_as: "Angemeldet als"
+<%- if app.organizations? -%>
+    in_organization: "in"
+    organizations: "Organisationen"
+<%- end -%>
+    account: "Konto"
+    sign_out: "Abmelden"
+<%- if app.organizations? -%>
+  accounts:
+    roles:
+      member: "Mitglied: sieht die Organisation und wer zu ihr gehört"
+      editor: "Bearbeitung: ändert auch"
+      administrator: "Administration: verwaltet auch Mitglieder"
+<%- end -%>
+  llms:
+    title: "<%= app.title %>"
+    summary: "Wofür <%= app.title %> da ist, in einem Satz."

@@ -1,0 +1,40 @@
+# The app's texts in English, the default locale. Keys follow the slices;
+# the accounts slice's are in accounts/en.yml. `fields`, `errors`, and
+# `problems` are read by Punch: labels, and messages for codes
+# (lib/punch/docs/translations.md).
+en:
+  billing:
+    reminder:
+      subject: "Invoice %{number} is overdue"
+      final_subject: "Invoice %{number} is still unpaid"
+      final: "We have reminded you before. If it stays unpaid, we will have to stop working for you."
+      body: "Invoice %{number} was due on %{due}. Please pay it soon, or tell us if something is wrong with it."
+  operators:
+    alert:
+      subject: "Alert: %{summary}"
+      body: "The ops console at /_punch shows the details."
+      error: "%{exception} in %{source}"
+      jobs: "%{job_type}: %{failed} failed, %{incompatible} unreadable"
+      backup: "the backup is not reliable (%{reason})"
+  errors:
+    before_start: "Must be after the start."
+  problems:
+    already_paid: "This invoice is paid already."
+  receipts:
+    new_receipt: "New receipt"
+    save: "Save"
+    delete: "Delete"
+  home:
+    title: "Welcome"
+    intro: "You are signed in. Your app starts here: add its first entity with `punch generate`."
+  layout:
+    main: "Main"
+    home: "Home"
+    ops: "Ops"
+    signed_in_as: "Signed in as"
+    account: "Account"
+    sign_out: "Sign out"
+  # /llms.txt, where agents start (lib/punch/docs/views.md, "Discovery").
+  llms:
+    title: "Examples"
+    summary: "The examples quoted by Punch's guides for what the reference app does not show."

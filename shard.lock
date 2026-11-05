@@ -1,0 +1,38 @@
+version: 2.0
+shards:
+  ameba:
+    git: https://github.com/crystal-ameba/ameba.git
+    version: 1.7.0
+
+  carbon:
+    git: https://github.com/luckyframework/carbon.git
+    version: 0.6.1
+
+  db:
+    git: https://github.com/crystal-lang/crystal-db.git
+    version: 0.14.0
+
+  email:
+    git: https://github.com/arcage/crystal-email.git
+    version: 0.7.1
+
+  habitat:
+    git: https://github.com/luckyframework/habitat.git
+    version: 0.4.9
+
+  lucky_task:
+    git: https://github.com/luckyframework/lucky_task.git
+    version: 0.3.0
+
+  lucky_template:
+    git: https://github.com/luckyframework/lucky_template.git
+    version: 0.2.0
+
+  sqlite3:
+    git: https://github.com/crystal-lang/crystal-sqlite3.git
+    version: 0.23.0
+
+  wordsmith:
+    git: https://github.com/luckyframework/wordsmith.git
+    version: 0.5.0
+

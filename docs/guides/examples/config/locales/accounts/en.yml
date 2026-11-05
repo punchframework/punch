@@ -1,0 +1,96 @@
+en:
+  accounts:
+    sign_up:
+      title: "Create an account"
+      sent: "Check your inbox: we mailed you a link to verify your address. Follow it, then sign in."
+      name: "Your name"
+      password_hint: "At least %{min} characters."
+      submit: "Create account"
+      have_account: "Have an account?"
+      sign_in: "Sign in"
+    sessions:
+      title: "Account"
+      heading: "Where you are signed in"
+      browser: "Browser"
+      address: "Address"
+      signed_in: "Signed in"
+      last_seen: "Last seen"
+      unknown: "Unknown"
+      this_browser: "(this browser)"
+      sign_out: "Sign out"
+      end_session: "End"
+      create:
+        title: "Sign in"
+        submit: "Sign in"
+        new_here: "New here?"
+        create_account: "Create an account"
+        forgot_password: "Forgot your password?"
+      reauthenticate:
+        title: "Confirm it is you"
+        needed: "Changing your addresses needs a recent sign-in."
+        with_password: "Enter your password to go on."
+        submit: "Confirm"
+    language:
+      heading: "Language"
+      hint: "Without a choice, your browser's language is used."
+      submit: "Change language"
+    link_expired: "This link has expired or was already used."
+    emails:
+      heading: "Email addresses"
+      verified: "(verified)"
+      unverified: "(not verified yet: check your inbox)"
+      remove: "Remove"
+      new_address: "New address"
+      add: "Add address"
+      verify_title: "Verify your address"
+      verify_intro: "Confirm that %{email} is yours."
+      verify: "Verify address"
+    passwords:
+      change_title: "Password"
+      current_password: "Current password"
+      new_password: "New password"
+      change: "Change password"
+      reset_title: "Set a new password"
+      reset: "Set password"
+    password_resets:
+      create:
+        title: "Forgot your password?"
+        intro: "Enter your address, and we will mail you a link to set a new password."
+        send_link: "Send link"
+        sent: "If an account uses this address, a link to set a new password is on its way. It works for one hour."
+    mail:
+      greeting: "Hello %{name},"
+      ignore: "If you did not ask for this, ignore this mail; nothing changes."
+      verify:
+        subject: "Verify your email address"
+        intro: "please confirm that %{email} is yours:"
+        action: "Verify address"
+        expiry: "The link works for 3 days."
+      reset:
+        subject: "Set a new password"
+        intro: "someone asked to set a new password for your account:"
+        action: "Set a new password"
+        expiry: "The link works for one hour, once."
+      notice:
+        not_you: "If this was not you, set a new password now:"
+        reset: "Set a new password"
+        password_changed:
+          subject: "Your password was changed"
+          body: "the password of your account was changed, and every other session was ended."
+        password_reset:
+          subject: "Your password was reset"
+          body: "the password of your account was set through a reset link, and every session was ended."
+        email_added:
+          subject: "An email address was added to your account"
+          body: "%{email} was added to your account."
+        email_removed:
+          subject: "An email address was removed from your account"
+          body: "%{email} was removed from your account."
+  fields:
+    email: "Email"
+    locale: "Language"
+    name: "Name"
+    password: "Password"
+  problems:
+    not_verified: "Verify your address first: follow the link we mailed you when you signed up. Lost it? Ask for a link to set a new password; it verifies the address too."
+    link_expired: "This link has expired or was already used."

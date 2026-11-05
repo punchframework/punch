@@ -1,0 +1,21 @@
+-- Organizations (lib/punch/docs/authorization.md, "Working in one
+-- organization"): people belong to them through roles held on them
+-- (`punch_role_assignments`). A session or API token works in one at a
+-- time: the one chosen last (`organization_choices`), else the first the
+-- user holds a role on.
+CREATE TABLE organizations (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  name       TEXT    NOT NULL COLLATE de,
+  locale     TEXT,
+  created_at TEXT    NOT NULL
+) STRICT;
+
+CREATE TABLE organization_choices (
+  id              INTEGER PRIMARY KEY,
+  session_id      INTEGER UNIQUE REFERENCES punch_sessions (id) ON DELETE CASCADE,
+  api_token_id    INTEGER UNIQUE REFERENCES punch_api_tokens (id) ON DELETE CASCADE,
+  organization_id INTEGER NOT NULL REFERENCES organizations (id) ON DELETE CASCADE,
+  CHECK ((session_id IS NULL) <> (api_token_id IS NULL))
+) STRICT;
+
+CREATE INDEX organization_choices_by_organization ON organization_choices (organization_id);

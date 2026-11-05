@@ -1,0 +1,10 @@
+{
+  "name": "invoicing",
+  "build": { "dockerfile": "Dockerfile" },
+  "postCreateCommand": "shards install && scripts/punch-tool.sh",
+  "remoteEnv": {
+    "PATH": "${containerWorkspaceFolder}/lib/punch/bin:${containerEnv:PATH}",
+    "PUNCH_STORAGE": "/home/vscode/storage"
+  },
+  "forwardPorts": [3000]
+}

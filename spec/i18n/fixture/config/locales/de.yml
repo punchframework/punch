@@ -1,0 +1,13 @@
+de:
+  greeting: "Hallo, %{name}!"
+  inbox:
+    title: "Posteingang"
+    messages:
+      one: "%{count} Nachricht"
+      other: "%{count} Nachrichten in %{folder}"
+  errors:
+    wrong_amount: "Stimmt nicht mit der Summe von %{total} überein."
+  problems:
+    already_sent: "Das wurde schon gesendet."
+  fields:
+    company_name: "Firma"

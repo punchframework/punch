@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+# Deploys a new binary on one machine with systemd and Caddy, without
+# dropping requests (lib/punch/docs/deployment.md):
+#
+#   deploy/deploy.sh path/to/<%= app.name %>     # the static binary (Dockerfile, --target binary)
+#
+# 1. The binary goes to /opt/<%= app.name %>/releases/<time>/, `current` points at it.
+# 2. The idle instance starts on the other port. It applies pending
+#    migrations at boot, then /up turns 200. The running instance keeps
+#    serving meanwhile, against the new schema (add first, remove a release
+#    later: lib/punch/docs/migrations.md).
+# 3. Once the new instance is healthy, Caddy sends it traffic too; the old
+#    one is stopped: SIGTERM, /up says 503 so Caddy stops sending, requests
+#    in progress finish, jobs go back to the queue, Litestream syncs.
+#
+# If the new instance does not become healthy within 60 s, it is stopped,
+# `current` points back, and the old one keeps running. A rollback is a
+# deploy of the previous release's binary.
+set -euo pipefail
+app=<%= app.name %>
+root=/opt/$app
+ports=(3000 3001)
+binary=${1:?usage: deploy.sh BINARY}
+
+old=""
+for port in "${ports[@]}"; do
+  systemctl is-active --quiet "$app@$port" && old=$port
+done
+new=${ports[0]}
+[ "$old" = "${ports[0]}" ] && new=${ports[1]}
+
+release=$root/releases/$(date -u +%Y%m%d%H%M%S)
+install -D -m 0755 "$binary" "$release/$app"
+previous=$(readlink "$root/current" || true)
+ln -sfn "$release" "$root/current"
+
+echo "starting $app@$new with $release"
+systemctl start "$app@$new"
+healthy=""
+for _ in $(seq 120); do
+  if curl -fsS -o /dev/null "http://127.0.0.1:$new/up"; then healthy=1; break; fi
+  systemctl is-active --quiet "$app@$new" || break
+  sleep 0.5
+done
+if [ -z "$healthy" ]; then
+  echo "$app@$new did not become healthy; keeping ${old:-nothing} running" >&2
+  journalctl -u "$app@$new" -n 30 --no-pager >&2 || true
+  systemctl stop "$app@$new" || true
+  [ -n "$previous" ] && ln -sfn "$previous" "$root/current"
+  exit 1
+fi
+systemctl enable --quiet "$app@$new"
+
+if [ -n "$old" ]; then
+  echo "stopping $app@$old"
+  systemctl disable --quiet "$app@$old"
+  systemctl stop "$app@$old"
+fi
+# Keep the last five releases.
+ls -1d "$root"/releases/* | head -n -5 | xargs -r rm -rf
+echo "deployed $release on port $new"

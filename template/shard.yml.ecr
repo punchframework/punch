@@ -1,0 +1,16 @@
+name: <%= app.name %>
+version: 0.1.0
+
+crystal: ">= <%= app.crystal %>"
+
+targets:
+  <%= app.name %>:
+    main: src/main.cr
+
+dependencies:
+<%= app.dependency.to_yaml_entry %>
+
+development_dependencies:
+  ameba:
+    github: crystal-ameba/ameba
+    version: ~> 1.7.0

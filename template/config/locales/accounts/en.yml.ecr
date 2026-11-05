@@ -1,0 +1,244 @@
+en:
+  accounts:
+<%- if app.organizations? -%>
+    organizations:
+      title: "Organizations"
+      none: "You belong to no organization. Start one, or ask an administrator to add you."
+      name: "Name"
+      current: "(working here)"
+      members: "Members"
+      switch: "Work here"
+      new_organization: "New organization"
+      create: "Start organization"
+<%- end -%>
+<%- if app.organizations? -%>
+    members:
+      title: "Members of %{name}"
+      name: "Name"
+      role: "Role"
+      expires: "Until"
+      remove: "Remove"
+      leave: "Leave"
+      add_heading: "Add or change a member"
+      email_hint: "A verified address of someone with an account."
+      add: "Give role"
+<%- end -%>
+    sign_up:
+      title: "Create an account"
+      sent: "Check your inbox: we mailed you a link to verify your address. Follow it, then sign in."
+      name: "Your name"
+      password_hint: "At least %{min} characters."
+      submit: "Create account"
+      have_account: "Have an account?"
+      sign_in: "Sign in"
+    sessions:
+      title: "Account"
+      heading: "Where you are signed in"
+      browser: "Browser"
+      address: "Address"
+      signed_in: "Signed in"
+      last_seen: "Last seen"
+      unknown: "Unknown"
+      this_browser: "(this browser)"
+      sign_out: "Sign out"
+      end_session: "End"
+      create:
+        title: "Sign in"
+        submit: "Sign in"
+        new_here: "New here?"
+        create_account: "Create an account"
+        forgot_password: "Forgot your password?"
+<%- if app.magic_links? -%>
+        email_link: "Sign in by email"
+<%- end -%>
+      reauthenticate:
+        title: "Confirm it is you"
+<%- if app.second_factor? -%>
+        needed: "Changing your addresses or two-step sign-in needs a recent sign-in."
+<%- else -%>
+        needed: "Changing your addresses needs a recent sign-in."
+<%- end -%>
+        with_password: "Enter your password to go on."
+<%- if app.second_factor? -%>
+        with_code: "Enter a code from your authenticator app, or a recovery code, to go on."
+<%- end -%>
+        submit: "Confirm"
+<%- if app.tokens? -%>
+    tokens:
+      title: "API tokens"
+      intro: "A token lets an agent or a script act as you, with what you may see and do, until it expires or you revoke it. Agents start at /llms.txt."
+      link: "API tokens for agents"
+      none: "You have no tokens."
+      name: "Name"
+      name_hint: "Who uses it, such as the agent's name."
+      created: "Created"
+      last_used: "Last used"
+      never: "Never"
+      expires: "Expires"
+      revoke: "Revoke"
+      revoke_named: "Revoke %{name}"
+      new_heading: "New token"
+      lifetime: "Works for"
+      days:
+        one: "%{count} day"
+        other: "%{count} days"
+      create: "Create token"
+      new_token: "Your new token"
+      copy_now: "Copy your new token now. It is not shown again; if it is lost, revoke it and create another."
+<%- end -%>
+    language:
+      heading: "Language"
+      hint: "Without a choice, your browser's language is used."
+      submit: "Change language"
+    link_expired: "This link has expired or was already used."
+    emails:
+      heading: "Email addresses"
+      verified: "(verified)"
+      unverified: "(not verified yet: check your inbox)"
+      remove: "Remove"
+      new_address: "New address"
+      add: "Add address"
+      verify_title: "Verify your address"
+      verify_intro: "Confirm that %{email} is yours."
+      verify: "Verify address"
+    passwords:
+      change_title: "Password"
+      current_password: "Current password"
+      new_password: "New password"
+<%- if app.tokens? -%>
+      revoke_tokens: "Also revoke every API token"
+<%- end -%>
+      change: "Change password"
+      reset_title: "Set a new password"
+      reset: "Set password"
+    password_resets:
+      create:
+        title: "Forgot your password?"
+        intro: "Enter your address, and we will mail you a link to set a new password."
+        send_link: "Send link"
+        sent: "If an account uses this address, a link to set a new password is on its way. It works for one hour."
+<%- if app.second_factor? -%>
+    second_factor:
+      heading: "Two-step sign-in"
+      off: "Off: your password, or a link by email, signs you in."
+      set_up: "Set up an authenticator app"
+      enabled:
+        one: "On, with an authenticator app. %{count} recovery code left."
+        other: "On, with an authenticator app. %{count} recovery codes left."
+      new_codes: "Your new recovery codes. Save them now; they are shown only until you confirm."
+      saved: "I saved them"
+      regenerate: "New recovery codes"
+      remove: "Remove authenticator app"
+      setup_title: "Set up an authenticator app"
+      setup_intro: "Add this account to an authenticator app, such as 1Password, Google Authenticator, or Aegis."
+      open_app: "Open in the authenticator app on this device"
+      secret_intro: "Or type this key into the app:"
+      recovery_title: "Recovery codes"
+      recovery_intro: "Each code signs you in once if you lose the app. Save them somewhere safe now: they are not shown again."
+      confirm: "Turn on"
+      confirm_hint: "The six digits the app shows now."
+      nothing_to_set_up: "No setup is waiting. Start one from your account page."
+      code: "Code"
+      code_hint: "Six digits from your authenticator app, or a recovery code."
+      sign_in_title: "Two-step sign-in"
+      sign_in_intro: "Enter the code from your authenticator app."
+      sign_in: "Sign in"
+<%- end -%>
+<%- if app.magic_links? -%>
+    magic_links:
+      title: "Sign in by email"
+      intro: "Enter your address, and we will mail you a link that signs you in."
+      send_link: "Send sign-in link"
+      sent: "If an account uses this address, a sign-in link is on its way. It works for 15 minutes."
+      sign_in: "Sign in"
+<%- end -%>
+    mail:
+      greeting: "Hello %{name},"
+      ignore: "If you did not ask for this, ignore this mail; nothing changes."
+      verify:
+        subject: "Verify your email address"
+        intro: "please confirm that %{email} is yours:"
+        action: "Verify address"
+        expiry: "The link works for 3 days."
+      reset:
+        subject: "Set a new password"
+        intro: "someone asked to set a new password for your account:"
+        action: "Set a new password"
+        expiry: "The link works for one hour, once."
+<%- if app.magic_links? -%>
+      magic_link:
+        subject: "Your sign-in link"
+        intro: "here is the link to sign in:"
+        action: "Sign in"
+        expiry: "The link works for 15 minutes, once."
+<%- end -%>
+      notice:
+        not_you: "If this was not you, set a new password now:"
+        reset: "Set a new password"
+        password_changed:
+          subject: "Your password was changed"
+          body: "the password of your account was changed, and every other session was ended."
+        password_reset:
+          subject: "Your password was reset"
+<%- if app.tokens? -%>
+          body: "the password of your account was set through a reset link, every session was ended, and every API token was revoked."
+<%- else -%>
+          body: "the password of your account was set through a reset link, and every session was ended."
+<%- end -%>
+        email_added:
+          subject: "An email address was added to your account"
+          body: "%{email} was added to your account."
+        email_removed:
+          subject: "An email address was removed from your account"
+          body: "%{email} was removed from your account."
+<%- if app.second_factor? -%>
+        second_factor_enabled:
+          subject: "Two-step sign-in is on"
+          body: "an authenticator app was added to your account; signing in now takes a code from it."
+<%- end -%>
+<%- if app.second_factor? -%>
+        second_factor_removed:
+          subject: "Two-step sign-in is off"
+          body: "the authenticator app was removed from your account; signing in takes your password alone again."
+<%- end -%>
+<%- if app.second_factor? -%>
+        recovery_codes:
+          subject: "Your recovery codes were replaced"
+          body: "new recovery codes were made for your account; the old ones no longer work."
+<%- end -%>
+<%- if app.tokens? -%>
+        token_created:
+          subject: "An API token was made for your account"
+          body: "the API token “%{token}” was made for your account. It can do what you can until it expires or is revoked."
+<%- end -%>
+  fields:
+    email: "Email"
+    locale: "Language"
+    name: "Name"
+    password: "Password"
+<%- if app.organizations? -%>
+    role: "Role"
+<%- end -%>
+<%- if app.organizations? -%>
+    expires_at: "Until"
+<%- end -%>
+<%- if app.organizations? -%>
+  errors:
+    administrator_expires: "An administrator's role does not expire."
+    in_the_past: "Must be in the future."
+<%- end -%>
+  problems:
+    not_verified: "Verify your address first: follow the link we mailed you when you signed up. Lost it? Ask for a link to set a new password; it verifies the address too."
+<%- if app.organizations? -%>
+    last_administrator: "The organization must keep an administrator."
+<%- end -%>
+<%- if app.organizations? -%>
+    not_member: "This user is not a member of the organization."
+<%- end -%>
+<%- if app.organizations? -%>
+    unknown_user: "No account has this verified address."
+<%- end -%>
+    link_expired: "This link has expired or was already used."
+<%- if app.second_factor? -%>
+    not_set_up: "No authenticator app is set up."
+<%- end -%>

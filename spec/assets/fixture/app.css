@@ -1,0 +1,5 @@
+@import "base.css";
+body { background: url(images/dot.png) no-repeat; }
+.logo { background-image: url("images/logo.svg#mark"), url('../outside.png'), url(images/gone.png); }
+.inline { background: url(data:image/png;base64,iVBORw0KGgo=); }
+.remote { background: url(https://example.org/x.png); }

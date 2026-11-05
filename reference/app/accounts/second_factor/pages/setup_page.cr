@@ -1,0 +1,59 @@
+module Accounts::SecondFactor
+  struct SetupView
+    include Punch::Component
+
+    def initialize(@actor : Invoicing::Actor, @setup : Punch::Auth::TOTPSetup?, @account : String)
+    end
+
+    def view(v : Punch::View) : Nil
+      t = v.t.accounts.second_factor
+      v.render Invoicing::Layout.new(t.setup_title, @actor) do
+        v.h1 t.setup_title
+        if setup = @setup
+          v.p t.setup_intro
+          v.p { v.a t.open_app, href: setup.href(issuer: ISSUER, account: @account) }
+          v.p t.secret_intro
+          v.p { v.code setup.secret_text.unwrap }
+          v.h2 t.recovery_title
+          v.p t.recovery_intro
+          v.ul(class: "recovery-codes") do
+            setup.recovery_codes.unwrap.each { |code| v.li { v.code Punch::Auth::SecondFactors.format(code) } }
+          end
+          v.form(Confirm.action) do |form|
+            form.field :code, label: t.code, hint: t.confirm_hint
+            form.submit t.confirm
+          end
+        else
+          v.p t.nothing_to_set_up
+        end
+        v.p { v.a v.t.accounts.sessions.title, href: Sessions::IndexPage.href }
+      end
+    end
+  end
+
+  # The name an authenticator app shows above the codes.
+  ISSUER = "Invoicing"
+
+  # `GET /accounts/second_factor/setup`: the secret of a setup that `Create`
+  # began, as a link for the app on this device and as text to type, the
+  # recovery codes, and the form for the app's first code. Only for a
+  # recent sign-in, since the secret is all the app needs.
+  @[Punch::Authorize(Punch::RecentlyAuthenticated)]
+  @[Punch::Forms(Confirm)]
+  struct SetupPage < Punch::Page
+    struct Input
+      include Punch::Input
+    end
+
+    alias Output = SetupView
+
+    def call(input : Input, db : Punch::Reader, actor : Invoicing::Actor) : Output
+      account = Punch::Auth::EmailIdentities.list(db, actor.user.id).first?.try(&.email.value) || actor.user.name.value
+      SetupView.new(actor, Punch::Auth::SecondFactors.setup(db, actor.user.id), account)
+    end
+
+    def self.redirect(result : Changed) : Punch::Href
+      Sessions::IndexPage.href
+    end
+  end
+end

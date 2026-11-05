@@ -1,0 +1,30 @@
+# The app's texts in English, the default locale. Keys follow the slices;
+# the accounts slice's are in accounts/en.yml. `fields`, `errors`, and
+# `problems` are read by Punch: labels, and messages for codes
+# (lib/punch/docs/translations.md).
+en:
+  home:
+    title: "Welcome"
+    intro: "You are signed in. Your app starts here: add its first entity with `punch generate`."
+  layout:
+    main: "Main"
+    home: "Home"
+    ops: "Ops"
+    signed_in_as: "Signed in as"
+<%- if app.organizations? -%>
+    in_organization: "in"
+    organizations: "Organizations"
+<%- end -%>
+    account: "Account"
+    sign_out: "Sign out"
+<%- if app.organizations? -%>
+  accounts:
+    roles:
+      member: "Member: sees the organization and who belongs to it"
+      editor: "Editor: also changes things"
+      administrator: "Administrator: also manages members"
+<%- end -%>
+  # /llms.txt, where agents start (lib/punch/docs/views.md, "Discovery").
+  llms:
+    title: "<%= app.title %>"
+    summary: "What <%= app.title %> is for, in a sentence."

@@ -1,0 +1,11 @@
+-- Users: who someone is, with no secrets and no sign-in columns
+-- (lib/punch/docs/auth.md). How they sign in lives in Punch's tables, in
+-- the next migration. `locale` is the language a user chose for the
+-- interface, such as `de`; without one, each request's Accept-Language
+-- decides.
+CREATE TABLE users (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  name       TEXT    NOT NULL,
+  created_at TEXT    NOT NULL,
+  locale     TEXT
+) STRICT;

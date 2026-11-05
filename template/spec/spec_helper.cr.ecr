@@ -1,0 +1,20 @@
+require "punch/spec"
+require "../src/<%= app.name %>"
+
+# What every spec file shares; the factories are per slice.
+module <%= app.module_name %>Spec
+  def self.parse(type : T.class, raw) : T forall T
+    type.parse(raw).as(T)
+  end
+end
+
+require "./support/accounts"
+
+# A key for specs only; real keys come from `punch keys:rotate`.
+Punch::Spec.credentials(<%= app.module_name %>::Credentials, <<-YAML)
+  secret_key_base: 1:2026-10-09:#{"5a" * 32}
+  public_id_key: #{"6b" * 32}
+  mail:
+    delivery: capture
+    from: <%= app.name %>@example.org
+  YAML

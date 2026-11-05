@@ -1,0 +1,25 @@
+# Crystal (the release Punch pins, .tool-versions), the libraries Punch
+# links, and git, for working on the app in a container (Codespaces,
+# editors that read .devcontainer). The databases live in
+# /home/vscode/storage, on the container's own disk: SQLite's WAL needs a
+# local filesystem, not a shared folder (lib/punch/docs/persistence.md).
+FROM mcr.microsoft.com/devcontainers/base:ubuntu-24.04
+
+ARG CRYSTAL_VERSION=1.22.0
+ARG TARGETARCH
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      gcc make pkg-config libpcre2-dev libgc-dev libevent-dev libssl-dev libxml2-dev libyaml-dev zlib1g-dev \
+      git curl ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
+# The archive is unpacked only when it has the SHA-256 Punch pins for it.
+RUN case "${TARGETARCH:-$(uname -m)}" in \
+      arm64|aarch64) asset=linux-aarch64-bundled sha256=10c18d84e833c78775f3ee8f834913ba89bd779d3849a9cf0912a434b42ddd62 ;; \
+      *) asset=linux-x86_64-bundled sha256=0ddf1bab1b4bc6659845b44a87da8bff4b49e9ffd82a30acaf6ab7cd57c05048 ;; \
+    esac && \
+    curl -fsSL --proto '=https' --proto-redir '=https' -o /tmp/crystal.tar.gz \
+      "https://github.com/crystal-lang/crystal/releases/download/${CRYSTAL_VERSION}/crystal-${CRYSTAL_VERSION}-1-${asset}.tar.gz" && \
+    echo "${sha256}  /tmp/crystal.tar.gz" | sha256sum --check --strict && \
+    tar xzf /tmp/crystal.tar.gz -C /opt && rm /tmp/crystal.tar.gz && \
+    ln -s /opt/crystal-${CRYSTAL_VERSION}-1/bin/crystal /opt/crystal-${CRYSTAL_VERSION}-1/bin/shards /usr/local/bin/
+USER vscode
+RUN mkdir -p /home/vscode/storage

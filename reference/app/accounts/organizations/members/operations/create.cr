@@ -1,0 +1,53 @@
+module Accounts::Organizations::Members
+  # No user has this verified address.
+  @[Punch::Status(422)]
+  struct UnknownUser
+    include Punch::Problem
+  end
+
+  # Gives the user with this address a role in the organization, or
+  # changes the one they hold; until `expires_at` when given. Only a
+  # verified address counts: a role opens the organization's data to
+  # whoever controls the address. An administrator's role does not expire,
+  # and the last administrator keeps theirs.
+  @[Punch::Authorize(ByRole)]
+  struct Create < Punch::Command
+    struct Input
+      include Punch::Input
+
+      @[Punch::PathParam]
+      getter organization_id : ID
+
+      getter email : Punch::Email
+      getter role : Roles::Name
+      getter expires_at : Time?
+
+      def check(errors : Punch::Rejection::Collector) : Nil
+        errors.add("expires_at", Punch::Invalid.new("administrator_expires")) if expires_at && role.administrator?
+      end
+    end
+
+    alias Output = Membership | UnknownUser | LastAdministrator | Punch::Rejection
+
+    def call(input : Input, db : Punch::Writer, actor : Invoicing::Actor, _grant : Punch::Grant(Create),
+             events : Punch::Events(Punch::Roles::Assigned | Punch::Roles::Revoked)) : Output
+      if (expires = input.expires_at) && expires <= Time.utc
+        return Punch::Rejection.new(Punch::Rejection::Path{"expires_at"}, Punch::Invalid.new("in_the_past"))
+      end
+
+      identity = Punch::Auth::EmailIdentities.find(db, input.email)
+      return UnknownUser.new unless identity && identity.verified?
+
+      user = Users::Table.find(db, Users::ID.parse(identity.user_id).as(Users::ID)) || return UnknownUser.new
+      organization = input.organization_id
+      if !input.role.administrator? && Store.last_administrator?(db, user.id, on: organization)
+        return LastAdministrator.new
+      end
+
+      assigned, ended = Store.give(db, user.id, input.role, on: organization, expires_at: input.expires_at, assigned_by: actor.user.id)
+      ended.each { |assignment| events.publish(Punch::Roles::Revoked.new(assignment, actor.user.id)) }
+      events.publish(Punch::Roles::Assigned.new(assigned))
+      Membership.new(organization, user, input.role, assigned.expires_at)
+    end
+  end
+end

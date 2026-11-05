@@ -1,0 +1,6 @@
+name: shop
+version: 1.2.0
+
+targets:
+  shop:
+    main: src/main.cr

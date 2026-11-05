@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+env:
+  CRYSTAL_WORKERS: "4"
+
+jobs:
+  check:
+    name: check (${{ matrix.os }}, pinned toolchain)
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read toolchain pin
+        id: pin
+        run: cat toolchain.env | grep -v '^#' >> "$GITHUB_OUTPUT"
+      - uses: crystal-lang/install-crystal@v1
+        with:
+          crystal: ${{ steps.pin.outputs.CRYSTAL_VERSION }}
+      # libxml2 for HTML matchers in spec binaries (Punch::Spec).
+      - if: runner.os == 'Linux'
+        run: sudo apt-get install -y libxml2-dev
+      - uses: actions/cache@v4
+        with:
+          path: |
+            lib
+            bin/ameba
+            reference/lib
+            reference/tmp/punch-check/ameba
+          key: shards-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('shard.lock', 'reference/shard.lock', 'toolchain.env') }}
+      - run: shards install
+      - run: shards install
+        working-directory: reference
+      - run: scripts/check.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: build-stats-${{ matrix.os }}
+          path: |
+            tmp/build-stats/
+            reference/tmp/build-stats/
+
+  # The three apps of `punch new`, each with its own `punch check`.
+  new-apps:
+    name: punch new (three apps)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read toolchain pin
+        id: pin
+        run: cat toolchain.env | grep -v '^#' >> "$GITHUB_OUTPUT"
+      - uses: crystal-lang/install-crystal@v1
+        with:
+          crystal: ${{ steps.pin.outputs.CRYSTAL_VERSION }}
+      - run: sudo apt-get install -y libxml2-dev
+      - run: shards install
+      - run: crystal build src/cli/main.cr -o tmp/punch-check/punch
+      - run: scripts/new-apps.sh "$RUNNER_TEMP/apps"
+
+  nightly:
+    name: check (ubuntu-latest, nightly compiler)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: crystal-lang/install-crystal@v1
+        with:
+          crystal: nightly
+      - run: sudo apt-get install -y libxml2-dev
+      - run: shards install
+      - run: scripts/check.sh

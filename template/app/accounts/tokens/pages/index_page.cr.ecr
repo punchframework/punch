@@ -1,0 +1,88 @@
+module Accounts::Tokens
+  struct ListView
+    include Punch::Component
+
+    def initialize(@list : List, @actor : <%= app.module_name %>::Actor, @recent : Bool, @new_token : String?)
+    end
+
+    def view(v : Punch::View) : Nil
+      t = v.t.accounts.tokens
+      v.render <%= app.module_name %>::Layout.new(t.title, @actor) do
+        v.h1 t.title
+        v.p t.intro
+        if token = @new_token
+          v.section(class: "new-token", aria: {label: t.new_token}) do
+            v.p t.copy_now
+            v.p { v.code token }
+          end
+        end
+        list(v)
+        create(v)
+      end
+    end
+
+    private def list(v : Punch::View) : Nil
+      t = v.t.accounts.tokens
+      if @list.tokens.empty?
+        v.p t.none
+        return
+      end
+      v.table(class: "tokens") do
+        v.thead { v.tr { [t.name, t.created, t.last_used, t.expires, ""].each { |label| v.th label, scope: "col" } } }
+        v.tbody do
+          @list.tokens.each do |token|
+            v.tr do
+              v.td token.name
+              v.td v.locale.time(token.created_at, :short)
+              v.td token.last_used_at.try { |time| v.locale.time(time, :short) } || t.never
+              v.td v.locale.time(token.expires_at, :short)
+              v.td do
+                v.form(Destroy.action(token_id: token.id), aria: {label: t.revoke_named(name: token.name)}) do |form|
+                  form.submit t.revoke
+                end
+              end
+            end
+          end
+        end
+      end
+    end
+
+    # The form needs a recent sign-in (its policy leaves it out without
+    # one); the page says how to get one.
+    private def create(v : Punch::View) : Nil
+      t = v.t.accounts.tokens
+      v.h2 t.new_heading
+      unless @recent
+        v.p do
+          v.text "#{v.t.accounts.sessions.reauthenticate.needed} "
+          v.a v.t.accounts.sessions.reauthenticate.title, href: Sessions::ReauthenticatePage.href
+        end
+      end
+      options = Create::LIFETIMES.map { |days| {days, t.days(count: days)} }
+      v.form(Create.action, values: {days: 30}) do |form|
+        form.field :name, label: t.name, hint: t.name_hint
+        form.field :days, label: t.lifetime, as: :select, options: options
+        form.submit t.create
+      end
+    end
+  end
+
+  # `GET /accounts/tokens` in a browser: the user's API tokens for agents
+  # and scripts, each with a button to revoke it, the form for a new one,
+  # and a new token once, right after it was made (`Punch::Auth::Reveal`).
+  @[Punch::Authorize(Punch::SignedIn)]
+  @[Punch::Forms(Create, Destroy)]
+  struct IndexPage < Punch::Page
+    alias Input = Index::Input
+
+    alias Output = ListView
+
+    def call(input : Input, db : Punch::Reader, actor : <%= app.module_name %>::Actor, reveal : Punch::Auth::Reveal) : Output
+      ListView.new(Index.new.call(input, db, actor), actor, Punch::Policy::RecentAuthentication.recent?(db, actor.principal), reveal.take.try(&.unwrap))
+    end
+
+    def self.redirect(result : Created) : Punch::Href
+      IndexPage.href
+    end
+  end
+end

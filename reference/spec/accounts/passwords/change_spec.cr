@@ -1,0 +1,62 @@
+require "../../spec_helper"
+
+private PASSWORD = "correct horse battery"
+
+private NEW_PASSWORD = "a new horse, a new battery"
+
+private def sign_up(client : Punch::Spec::Client, email = "ingrid@example.org") : Punch::Spec::Client
+  AccountsSpec.sign_up(client, email, PASSWORD)
+end
+
+private def signed_in(email = "ingrid@example.org", password = PASSWORD) : Punch::Spec::Client
+  client = Punch::Spec.client
+  client.submit(Accounts::Sessions::Create.action, form: {"email" => email, "password" => password}).should redirect_to(Home::IndexPage.href)
+  client
+end
+
+# The one mail of this example to *email* with *subject*, after running
+# the jobs.
+private def mail_to(email : String, subject : String) : Punch::Mailer::Capture::Captured
+  Punch::Spec.perform_jobs
+  mails = Punch::Spec.mails(to: email).select(&.subject.==(subject))
+  mails.size.should eq(1)
+  mails.first
+end
+
+describe "changing the password" do
+  it "needs the current password, ends the other sessions, keeps this one under a new ID, and tells the user" do
+    browser = sign_up(Punch::Spec.client)
+    phone = signed_in
+    Punch::Spec.perform_jobs
+
+    wrong = browser.submit(Accounts::Passwords::Change.action, form: {"current_password" => "not it", "password" => NEW_PASSWORD})
+    wrong.status.code.should eq(422)
+    wrong.should have_element(".form-errors li[data-code=invalid_credentials]")
+
+    responses = [] of Punch::Spec::Response
+    revoked = Punch::Spec.published(Punch::Auth::SessionRevoked) do
+      responses << browser.submit(Accounts::Passwords::Change.action, form: {"current_password" => PASSWORD, "password" => NEW_PASSWORD})
+    end
+    changed = responses.first
+    changed.should redirect_to(Accounts::Sessions::IndexPage.href)
+    changed.headers["Set-Cookie"].should start_with("__Host-session=")
+    revoked.map(&.reason).should eq(["password_changed"])
+    browser.visit(Accounts::Sessions::IndexPage.href).status.code.should eq(200)
+    phone.visit(Accounts::Sessions::IndexPage.href).should redirect_to(Accounts::Sessions::CreatePage.href)
+    mail_to("ingrid@example.org", "Your password was changed").text.should contain("every other session was ended")
+  end
+
+  it "ends the API tokens only when asked" do
+    browser = sign_up(Punch::Spec.client)
+    user_id = Punch::Spec.db.read { |db| Punch::Auth::EmailIdentities.find(db, Punch::Email.parse("ingrid@example.org").as(Punch::Email)).try(&.user_id) } || fail "no user"
+    kept = Punch::Spec.bearer(Punch::Spec.api_token(user_id))
+    browser.visit(Accounts::Sessions::IndexPage.href).should have_element("input[name=revoke_tokens]")
+    browser.submit(Accounts::Passwords::Change.action, form: {"current_password" => PASSWORD, "password" => NEW_PASSWORD})
+      .should redirect_to(Accounts::Sessions::IndexPage.href)
+    Punch::Spec.client.get(Accounts::Tokens::Index.path, headers: kept).status.should eq(HTTP::Status::OK)
+
+    browser.submit(Accounts::Passwords::Change.action, form: {"current_password" => NEW_PASSWORD, "password" => PASSWORD, "revoke_tokens" => "true"})
+      .should redirect_to(Accounts::Sessions::IndexPage.href)
+    Punch::Spec.client.get(Accounts::Tokens::Index.path, headers: kept).status.should eq(HTTP::Status::UNAUTHORIZED)
+  end
+end

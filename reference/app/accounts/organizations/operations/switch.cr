@@ -1,0 +1,21 @@
+module Accounts::Organizations
+  # Makes the organization the one this session or token works in: lists
+  # show what belongs to it, and new things go into it.
+  @[Punch::Authorize(ByRole)]
+  struct Switch < Punch::Command
+    struct Input
+      include Punch::Input
+
+      @[Punch::PathParam]
+      getter organization_id : ID
+    end
+
+    alias Output = Organization | NotFound
+
+    def call(input : Input, db : Punch::Writer, actor : Invoicing::Actor, _grant : Punch::Grant(Switch)) : Output
+      organization = Table.find(db, input.organization_id) || return NotFound.new
+      Store.choose(db, actor.principal, organization.id)
+      Organization.new(organization, current: true)
+    end
+  end
+end

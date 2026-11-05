@@ -1,0 +1,244 @@
+de:
+  accounts:
+<%- if app.organizations? -%>
+    organizations:
+      title: "Organisationen"
+      none: "Sie gehören zu keiner Organisation. Gründen Sie eine, oder lassen Sie sich von einem Administrator hinzufügen."
+      name: "Name"
+      current: "(hier tätig)"
+      members: "Mitglieder"
+      switch: "Hier arbeiten"
+      new_organization: "Neue Organisation"
+      create: "Organisation gründen"
+<%- end -%>
+<%- if app.organizations? -%>
+    members:
+      title: "Mitglieder von %{name}"
+      name: "Name"
+      role: "Rolle"
+      expires: "Bis"
+      remove: "Entfernen"
+      leave: "Verlassen"
+      add_heading: "Mitglied hinzufügen oder ändern"
+      email_hint: "Eine bestätigte Adresse von jemandem mit Konto."
+      add: "Rolle geben"
+<%- end -%>
+    sign_up:
+      title: "Konto anlegen"
+      sent: "Sehen Sie in Ihr Postfach: Wir haben Ihnen einen Link geschickt, um Ihre Adresse zu bestätigen. Folgen Sie ihm, dann melden Sie sich an."
+      name: "Ihr Name"
+      password_hint: "Mindestens %{min} Zeichen."
+      submit: "Konto anlegen"
+      have_account: "Schon ein Konto?"
+      sign_in: "Anmelden"
+    sessions:
+      title: "Konto"
+      heading: "Wo Sie angemeldet sind"
+      browser: "Browser"
+      address: "Adresse"
+      signed_in: "Angemeldet"
+      last_seen: "Zuletzt gesehen"
+      unknown: "Unbekannt"
+      this_browser: "(dieser Browser)"
+      sign_out: "Abmelden"
+      end_session: "Beenden"
+      create:
+        title: "Anmelden"
+        submit: "Anmelden"
+        new_here: "Neu hier?"
+        create_account: "Konto anlegen"
+        forgot_password: "Passwort vergessen?"
+<%- if app.magic_links? -%>
+        email_link: "Per E-Mail anmelden"
+<%- end -%>
+      reauthenticate:
+        title: "Bestätigen Sie, dass Sie es sind"
+<%- if app.second_factor? -%>
+        needed: "Um Adressen oder die Anmeldung in zwei Schritten zu ändern, müssen Sie sich kürzlich angemeldet haben."
+<%- else -%>
+        needed: "Um Adressen zu ändern, müssen Sie sich kürzlich angemeldet haben."
+<%- end -%>
+        with_password: "Geben Sie Ihr Passwort ein, um fortzufahren."
+<%- if app.second_factor? -%>
+        with_code: "Geben Sie einen Code aus Ihrer Authenticator-App oder einen Wiederherstellungscode ein, um fortzufahren."
+<%- end -%>
+        submit: "Bestätigen"
+<%- if app.tokens? -%>
+    tokens:
+      title: "API-Tokens"
+      intro: "Mit einem Token handelt ein Agent oder ein Skript in Ihrem Namen, mit dem, was Sie sehen und tun dürfen, bis es abläuft oder Sie es widerrufen. Agenten beginnen bei /llms.txt."
+      link: "API-Tokens für Agenten"
+      none: "Sie haben keine Tokens."
+      name: "Name"
+      name_hint: "Wer es benutzt, etwa der Name des Agenten."
+      created: "Erstellt"
+      last_used: "Zuletzt benutzt"
+      never: "Nie"
+      expires: "Läuft ab"
+      revoke: "Widerrufen"
+      revoke_named: "%{name} widerrufen"
+      new_heading: "Neues Token"
+      lifetime: "Gültig für"
+      days:
+        one: "%{count} Tag"
+        other: "%{count} Tage"
+      create: "Token erstellen"
+      new_token: "Ihr neues Token"
+      copy_now: "Kopieren Sie Ihr neues Token jetzt. Es wird nicht noch einmal gezeigt; geht es verloren, widerrufen Sie es und erstellen ein neues."
+<%- end -%>
+    language:
+      heading: "Sprache"
+      hint: "Ohne Auswahl gilt die Sprache Ihres Browsers."
+      submit: "Sprache ändern"
+    link_expired: "Dieser Link ist abgelaufen oder wurde schon benutzt."
+    emails:
+      heading: "E-Mail-Adressen"
+      verified: "(bestätigt)"
+      unverified: "(noch nicht bestätigt: sehen Sie in Ihr Postfach)"
+      remove: "Entfernen"
+      new_address: "Neue Adresse"
+      add: "Adresse hinzufügen"
+      verify_title: "Adresse bestätigen"
+      verify_intro: "Bestätigen Sie, dass %{email} Ihnen gehört."
+      verify: "Adresse bestätigen"
+    passwords:
+      change_title: "Passwort"
+      current_password: "Aktuelles Passwort"
+      new_password: "Neues Passwort"
+<%- if app.tokens? -%>
+      revoke_tokens: "Auch alle API-Tokens widerrufen"
+<%- end -%>
+      change: "Passwort ändern"
+      reset_title: "Neues Passwort setzen"
+      reset: "Passwort setzen"
+    password_resets:
+      create:
+        title: "Passwort vergessen?"
+        intro: "Geben Sie Ihre Adresse ein, und wir schicken Ihnen einen Link, um ein neues Passwort zu setzen."
+        send_link: "Link senden"
+        sent: "Wenn ein Konto diese Adresse nutzt, ist ein Link für ein neues Passwort unterwegs. Er gilt eine Stunde."
+<%- if app.second_factor? -%>
+    second_factor:
+      heading: "Anmeldung in zwei Schritten"
+      off: "Aus: Ihr Passwort oder ein Link per E-Mail meldet Sie an."
+      set_up: "Authenticator-App einrichten"
+      enabled:
+        one: "An, mit einer Authenticator-App. Noch %{count} Wiederherstellungscode."
+        other: "An, mit einer Authenticator-App. Noch %{count} Wiederherstellungscodes."
+      new_codes: "Ihre neuen Wiederherstellungscodes. Speichern Sie sie jetzt; sie werden nur angezeigt, bis Sie bestätigen."
+      saved: "Ich habe sie gespeichert"
+      regenerate: "Neue Wiederherstellungscodes"
+      remove: "Authenticator-App entfernen"
+      setup_title: "Authenticator-App einrichten"
+      setup_intro: "Fügen Sie dieses Konto einer Authenticator-App hinzu, etwa 1Password, Google Authenticator oder Aegis."
+      open_app: "In der Authenticator-App auf diesem Gerät öffnen"
+      secret_intro: "Oder geben Sie diesen Schlüssel in der App ein:"
+      recovery_title: "Wiederherstellungscodes"
+      recovery_intro: "Jeder Code meldet Sie einmal an, falls Sie die App verlieren. Speichern Sie sie jetzt sicher: Sie werden nicht wieder angezeigt."
+      confirm: "Einschalten"
+      confirm_hint: "Die sechs Ziffern, die die App gerade zeigt."
+      nothing_to_set_up: "Es wartet keine Einrichtung. Beginnen Sie eine auf Ihrer Kontoseite."
+      code: "Code"
+      code_hint: "Sechs Ziffern aus Ihrer Authenticator-App oder ein Wiederherstellungscode."
+      sign_in_title: "Anmeldung in zwei Schritten"
+      sign_in_intro: "Geben Sie den Code aus Ihrer Authenticator-App ein."
+      sign_in: "Anmelden"
+<%- end -%>
+<%- if app.magic_links? -%>
+    magic_links:
+      title: "Per E-Mail anmelden"
+      intro: "Geben Sie Ihre Adresse ein, und wir schicken Ihnen einen Link, der Sie anmeldet."
+      send_link: "Anmeldelink senden"
+      sent: "Wenn ein Konto diese Adresse nutzt, ist ein Anmeldelink unterwegs. Er gilt 15 Minuten."
+      sign_in: "Anmelden"
+<%- end -%>
+    mail:
+      greeting: "Guten Tag %{name},"
+      ignore: "Wenn Sie das nicht angefordert haben, ignorieren Sie diese E-Mail; es ändert sich nichts."
+      verify:
+        subject: "Bestätigen Sie Ihre E-Mail-Adresse"
+        intro: "bitte bestätigen Sie, dass %{email} Ihnen gehört:"
+        action: "Adresse bestätigen"
+        expiry: "Der Link gilt 3 Tage."
+      reset:
+        subject: "Neues Passwort setzen"
+        intro: "jemand möchte ein neues Passwort für Ihr Konto setzen:"
+        action: "Neues Passwort setzen"
+        expiry: "Der Link gilt eine Stunde und nur einmal."
+<%- if app.magic_links? -%>
+      magic_link:
+        subject: "Ihr Anmeldelink"
+        intro: "hier ist der Link zur Anmeldung:"
+        action: "Anmelden"
+        expiry: "Der Link gilt 15 Minuten und nur einmal."
+<%- end -%>
+      notice:
+        not_you: "Wenn Sie das nicht waren, setzen Sie jetzt ein neues Passwort:"
+        reset: "Neues Passwort setzen"
+        password_changed:
+          subject: "Ihr Passwort wurde geändert"
+          body: "das Passwort Ihres Kontos wurde geändert, und alle anderen Sitzungen wurden beendet."
+        password_reset:
+          subject: "Ihr Passwort wurde zurückgesetzt"
+<%- if app.tokens? -%>
+          body: "das Passwort Ihres Kontos wurde über einen Link neu gesetzt, alle Sitzungen wurden beendet, und alle API-Tokens wurden widerrufen."
+<%- else -%>
+          body: "das Passwort Ihres Kontos wurde über einen Link neu gesetzt, und alle Sitzungen wurden beendet."
+<%- end -%>
+        email_added:
+          subject: "Ihrem Konto wurde eine E-Mail-Adresse hinzugefügt"
+          body: "%{email} wurde Ihrem Konto hinzugefügt."
+        email_removed:
+          subject: "Aus Ihrem Konto wurde eine E-Mail-Adresse entfernt"
+          body: "%{email} wurde aus Ihrem Konto entfernt."
+<%- if app.second_factor? -%>
+        second_factor_enabled:
+          subject: "Die Anmeldung in zwei Schritten ist an"
+          body: "Ihrem Konto wurde eine Authenticator-App hinzugefügt; zur Anmeldung braucht es nun einen Code daraus."
+<%- end -%>
+<%- if app.second_factor? -%>
+        second_factor_removed:
+          subject: "Die Anmeldung in zwei Schritten ist aus"
+          body: "die Authenticator-App wurde aus Ihrem Konto entfernt; zur Anmeldung genügt wieder Ihr Passwort."
+<%- end -%>
+<%- if app.second_factor? -%>
+        recovery_codes:
+          subject: "Ihre Wiederherstellungscodes wurden ersetzt"
+          body: "für Ihr Konto wurden neue Wiederherstellungscodes erstellt; die alten gelten nicht mehr."
+<%- end -%>
+<%- if app.tokens? -%>
+        token_created:
+          subject: "Für Ihr Konto wurde ein API-Token erstellt"
+          body: "für Ihr Konto wurde das API-Token „%{token}“ erstellt. Es kann, was Sie können, bis es abläuft oder widerrufen wird."
+<%- end -%>
+  fields:
+    email: "E-Mail"
+    locale: "Sprache"
+    name: "Name"
+    password: "Passwort"
+<%- if app.organizations? -%>
+    role: "Rolle"
+<%- end -%>
+<%- if app.organizations? -%>
+    expires_at: "Bis"
+<%- end -%>
+<%- if app.organizations? -%>
+  errors:
+    administrator_expires: "Die Rolle eines Administrators läuft nicht ab."
+    in_the_past: "Muss in der Zukunft liegen."
+<%- end -%>
+  problems:
+    not_verified: "Bestätigen Sie zuerst Ihre Adresse: Folgen Sie dem Link, den wir Ihnen bei der Registrierung geschickt haben. Verloren? Fordern Sie einen Link für ein neues Passwort an; er bestätigt die Adresse auch."
+<%- if app.organizations? -%>
+    last_administrator: "Die Organisation muss einen Administrator behalten."
+<%- end -%>
+<%- if app.organizations? -%>
+    not_member: "Diese Person ist kein Mitglied der Organisation."
+<%- end -%>
+<%- if app.organizations? -%>
+    unknown_user: "Kein Konto hat diese bestätigte Adresse."
+<%- end -%>
+    link_expired: "Dieser Link ist abgelaufen oder wurde schon benutzt."
+<%- if app.second_factor? -%>
+    not_set_up: "Es ist keine Authenticator-App eingerichtet."
+<%- end -%>

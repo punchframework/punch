@@ -1,0 +1,88 @@
+# Builds the `punch` tool when a GitHub release is published, and attaches
+# it to the release: a static binary for Linux on x86-64 and ARM64, and one
+# for macOS on Apple silicon, each packed with LICENSE and
+# THIRD_PARTY_NOTICES.txt, plus SHA256SUMS and a build provenance
+# attestation (`gh attestation verify FILE --repo OWNER/NAME`).
+#
+# The release's tag must be `v` and shard.yml's version. Run it by hand
+# (workflow_dispatch) to build and check without a release: the archives
+# are then this run's artifacts.
+name: Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  linux:
+    name: linux (${{ matrix.arch }})
+    strategy:
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            arch: x86_64
+          - runner: ubuntu-24.04-arm
+            arch: aarch64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Tag matches shard.yml
+        if: github.event_name == 'release'
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          version="$(sed -n 's/^version: *//p' shard.yml)"
+          [ "$TAG" = "v$version" ] || { echo "::error::tag $TAG, but shard.yml says $version"; exit 1; }
+      # Docker on the runner: actions do not run inside Alpine on ARM64.
+      - run: packaging/build-tool.sh --repository "$GITHUB_REPOSITORY" dist
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: punch-linux-${{ matrix.arch }}
+          path: dist/*.tar.gz
+          if-no-files-found: error
+
+  macos:
+    name: macos (aarch64)
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Read toolchain pin
+        id: pin
+        run: grep -v '^#' toolchain.env >> "$GITHUB_OUTPUT"
+      - uses: crystal-lang/install-crystal@46e48b6238ee23b1a6ef08ec39f12fb234676006 # v1.9.3
+        with:
+          crystal: ${{ steps.pin.outputs.CRYSTAL_VERSION }}
+      - run: packaging/build-tool.sh --repository "$GITHUB_REPOSITORY" dist
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: punch-macos-aarch64
+          path: dist/*.tar.gz
+          if-no-files-found: error
+
+  publish:
+    needs: [linux, macos]
+    if: github.event_name == 'release'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: punch-*
+          path: dist
+          merge-multiple: true
+      - run: cd dist && sha256sum *.tar.gz | tee SHA256SUMS
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: dist/*.tar.gz
+      - name: Attach to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: gh release upload "$TAG" dist/*.tar.gz dist/SHA256SUMS --repo "$GITHUB_REPOSITORY"

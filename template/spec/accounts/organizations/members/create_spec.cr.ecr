@@ -1,0 +1,67 @@
+require "../../../spec_helper"
+
+private def expect_not_found(response : Punch::Spec::Response) : Nil
+  {response.status, response.json["code"]}.should eq({HTTP::Status::NOT_FOUND, "not_found"})
+end
+
+private def expect_forbidden(response : Punch::Spec::Response) : Nil
+  {response.status, response.json["code"]}.should eq({HTTP::Status::FORBIDDEN, "forbidden"})
+end
+
+# Two users, each administrator of an organization of their own, and
+# clients signed in as them.
+private def two_users
+  ada, bob = AccountsSpec.user("Ada Admin"), AccountsSpec.user("Bob Member")
+  organization = Punch::Spec.db.read { |db| AccountsSpec.organization(db, ada.id) }
+  {ada, bob, organization, Punch::Spec.client.sign_in(ada.id), Punch::Spec.client.sign_in(bob.id)}
+end
+
+private def verified(user : Accounts::Users::Record, email : String) : Nil
+  Punch::Spec.db.write { |db| Punch::Auth::EmailIdentities.add(db, user.id, <%= app.module_name %>Spec.parse(Punch::Email, email), verified_at: Time.utc) }
+end
+
+describe "roles" do
+  it "lets an administrator give, change, and take roles, by verified address" do
+    ada, bob, organization, ada_client, bob_client = two_users
+    members = Accounts::Organizations::Members::Create.path(organization_id: organization)
+    unknown = ada_client.post(members, json: {email: "bob@example.org", role: "member"})
+    {unknown.status, unknown.json["code"]}.should eq({HTTP::Status::UNPROCESSABLE_ENTITY, "unknown_user"})
+    Punch::Spec.db.write { |db| Punch::Auth::EmailIdentities.add(db, bob.id, <%= app.module_name %>Spec.parse(Punch::Email, "bob@example.org")) }
+    ada_client.post(members, json: {email: "bob@example.org", role: "member"}).json["code"].should eq("unknown_user")
+
+    Punch::Spec.db.write { |db| db.exec("UPDATE punch_email_identities SET verified_at = '2026-10-13T00:00:00Z' WHERE user_id = ?", bob.id.value) }
+    expires = 30.days.from_now.at_beginning_of_second
+    given = -> { ada_client.post(members, json: {email: "bob@example.org", role: "member", expires_at: expires}) }
+    given.should publish(Punch::Roles::Assigned, user_id: bob.id.value, role: "accounts.roles.member", resource_id: organization.value, assigned_by: ada.id.value)
+    listed = ada_client.get(Accounts::Organizations::Members::Index.path(organization_id: organization)).json["members"].as_a
+    listed.map { |member| {member["name"].as_s, member["role"].as_s} }.should eq([{"Ada Admin", "administrator"}, {"Bob Member", "member"}])
+    Time.parse_rfc3339(listed[1]["expires_at"].as_s).should eq(expires)
+
+    changed = -> { ada_client.post(members, json: {email: "bob@example.org", role: "editor"}) }
+    changed.should publish(Punch::Roles::Revoked, user_id: bob.id.value, role: "accounts.roles.member", revoked_by: ada.id.value)
+    Punch::Spec.db.read { |db| Accounts::Organizations::Store.held(db, bob.id, on: organization) }.should eq(Accounts::Roles::Name::Editor)
+
+    # Not an administrator: Bob may not give roles, and the form is gone.
+    expect_forbidden(bob_client.post(members, json: {email: "bob@example.org", role: "administrator"}))
+    page = bob_client.visit(Accounts::Organizations::Members::IndexPage.href(organization_id: organization))
+    page.should have_element("table.members td", text: "Ada Admin")
+    page.should_not have_element("form.add-member")
+    page.should have_element("button", text: "Leave", count: 1)
+    ada_client.visit(Accounts::Organizations::Members::IndexPage.href(organization_id: organization)).should have_element("form.add-member")
+
+    removed = -> { ada_client.delete(Accounts::Organizations::Members::Destroy.path(organization_id: organization, user_id: bob.id)) }
+    removed.should publish(Punch::Roles::Revoked, user_id: bob.id.value, role: "accounts.roles.editor")
+    expect_not_found(bob_client.get(Accounts::Organizations::Members::Index.path(organization_id: organization)))
+  end
+
+  it "refuses an expiring administrator and one in the past" do
+    ada, bob, organization, ada_client, _ = two_users
+    verified(bob, "bob@example.org")
+    members = Accounts::Organizations::Members::Create.path(organization_id: organization)
+    refused = ada_client.post(members, json: {email: "bob@example.org", role: "administrator", expires_at: 1.day.from_now})
+    refused.json["errors"].as_a.map(&.["code"]).should eq(["administrator_expires"])
+    refused = ada_client.post(members, json: {email: "bob@example.org", role: "member", expires_at: 1.day.ago})
+    refused.json["errors"].as_a.map(&.["code"]).should eq(["in_the_past"])
+    ada.should_not be_nil
+  end
+end

@@ -1,0 +1,20 @@
+name: invoicing
+version: 0.8.0
+
+description: |
+  Punch's reference app: invoices and customers as a JSON API.
+
+crystal: ">= 1.22.0"
+
+targets:
+  invoicing:
+    main: src/main.cr
+
+dependencies:
+  punch:
+    path: ..
+
+development_dependencies:
+  ameba:
+    github: crystal-ameba/ameba
+    version: ~> 1.7.0

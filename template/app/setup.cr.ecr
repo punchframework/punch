@@ -1,0 +1,31 @@
+# Every declaration that configures Punch for this app, in one place.
+require "punch/ops/console"
+
+# Stylesheets and images, embedded in the binary with fingerprinted URLs
+# (lib/punch/docs/assets.md). Turbo comes with Punch.
+Punch.assets "assets"
+
+# The app's translations (lib/punch/docs/translations.md): `punch i18n:generate`
+# writes <%= app.module_name %>::Translations to translations.gen.cr from
+# config/locales/*.yml. Views reach them as `v.t`, other code as
+# `locale.t`.
+Punch.translations <%= app.module_name %>::Translations, default: "en"
+
+# What the app needs from its deployment (`<%= app.module_name %>::Credentials`).
+Punch.credentials <%= app.module_name %>::Credentials
+
+# The binary carries its migrations and applies them at boot
+# (lib/punch/docs/deployment.md).
+Punch.migrations "../db/migrations"
+
+# API tokens read `<%= app.token_prefix %>_…`, so people and secret scanners can tell whose
+# they are.
+Punch::Auth.config = Punch::Auth::Config.new(token_prefix: "<%= app.token_prefix %>")
+
+# A browser without a session that asks for a page needing one comes here
+# (lib/punch/docs/auth.md).
+Punch::Pages.sign_in = Accounts::Sessions::CreatePage.href
+
+# The ops console (lib/punch/docs/ops.md): named once, with the app's actor. Users
+# holding `Accounts::Roles::Operator` may use it, in every environment.
+Punch::Ops::Console.mount <%= app.module_name %>::Actor, Punch::Ops::Console::ByRole

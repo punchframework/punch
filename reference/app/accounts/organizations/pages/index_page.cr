@@ -1,0 +1,61 @@
+module Accounts::Organizations
+  struct ListView
+    include Punch::Component
+
+    def initialize(@list : List, @actor : Invoicing::Actor)
+    end
+
+    def view(v : Punch::View) : Nil
+      t = v.t.accounts.organizations
+      v.render Invoicing::Layout.new(t.title, @actor) do
+        v.h1 t.title
+        if @list.organizations.empty?
+          v.p t.none
+        else
+          v.table(class: "organizations") do
+            v.thead { v.tr { [t.name, "", ""].each { |label| v.th label, scope: "col" } } }
+            v.tbody { @list.organizations.each { |organization| row(v, organization) } }
+          end
+        end
+        v.h2 t.new_organization
+        v.form(Create.action) do |form|
+          form.field :name
+          form.submit t.create
+        end
+      end
+    end
+
+    private def row(v : Punch::View, organization : Organization) : Nil
+      t = v.t.accounts.organizations
+      v.tr do
+        v.td do
+          v.text organization.name.to_s
+          v.strong " #{t.current}" if organization.current?
+        end
+        v.td { v.a t.members, href: Members::IndexPage.href(organization_id: organization.id) }
+        v.td do
+          v.form(Switch.action(organization_id: organization.id)) { |form| form.submit t.switch } unless organization.current?
+        end
+      end
+    end
+  end
+
+  # `GET /accounts/organizations`: the organizations the user belongs to,
+  # a button to work in another one, and a form to start one.
+  @[Punch::Authorize(Punch::SignedIn)]
+  @[Punch::Forms(Switch, Create)]
+  struct IndexPage < Punch::Page
+    alias Input = Index::Input
+
+    alias Output = ListView
+
+    def call(input : Input, db : Punch::Reader, actor : Invoicing::Actor) : Output
+      ListView.new(Index.new.call(input, db, actor), actor)
+    end
+
+    # Either way, home, in the organization now worked in.
+    def self.redirect(result : Organization | Created) : Punch::Href
+      Home::IndexPage.href
+    end
+  end
+end

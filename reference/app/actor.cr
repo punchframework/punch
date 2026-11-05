@@ -1,0 +1,36 @@
+module Invoicing
+  # Who a request acts for: a signed-in user, by session or API token
+  # (lib/punch/docs/auth.md). Operations that need one take it in `call`; Punch
+  # answers 401 when there is none.
+  struct Actor
+    include Punch::Auth::Actor
+
+    getter user : Accounts::Users::Record
+    getter principal : Punch::Auth::Principal
+    # The organization the session or token works in: the one it chose
+    # last (`Organizations::Switch`), else the first the user holds a role
+    # on; `nil` when they hold none.
+    getter organization : Accounts::Organizations::Record?
+
+    def initialize(@user, @principal, @organization = nil)
+    end
+
+    # The organization's ID, for operations whose policy is
+    # `Accounts::Organizations::Current`: it refuses an actor without one,
+    # so their `call` never sees one.
+    def organization_id : Accounts::Organizations::ID
+      organization.try(&.id) || raise "#{user.id} works in no organization; only operations under Accounts::Organizations::Current may ask"
+    end
+
+    # The language the user chose, which wins over Accept-Language.
+    def locale : Punch::LocaleTag?
+      user.locale
+    end
+
+    # `nil` when the user no longer exists.
+    def self.load(principal : Punch::Auth::Principal, db : Punch::Reader | Punch::Writer) : self?
+      user = Accounts::Users::Table.find(db, principal.user_id(Accounts::Users::ID)) || return
+      new(user, principal, Accounts::Organizations::Store.current(db, principal))
+    end
+  end
+end

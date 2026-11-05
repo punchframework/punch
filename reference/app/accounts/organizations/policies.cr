@@ -1,0 +1,25 @@
+module Accounts::Organizations
+  # Whoever holds a role on the organization in the path that permits the
+  # operation. Someone who holds no role there gets 404, so organization
+  # IDs reveal nothing; a member whose role does not permit it, 403.
+  struct ByRole
+    include Punch::Policy
+
+    def self.check(actor : Invoicing::Actor, db : Punch::Reader | Punch::Writer, operation : Punch::Operation.class, *,
+                   organization_id : ID, **_params) : Punch::Policy::Decision
+      Punch::Roles.check(db, actor.user.id, operation, on: organization_id)
+    end
+  end
+
+  # Operations on the organization the actor works in (`Actor#organization`):
+  # lists, and Commands that add to it. Allowed when the actor's role there
+  # permits the operation; 403 without an organization or such a role.
+  struct Current
+    include Punch::Policy
+
+    def self.check(actor : Invoicing::Actor, db : Punch::Reader | Punch::Writer, operation : Punch::Operation.class, **_params) : Punch::Policy::Decision
+      organization = actor.organization || return forbid
+      Punch::Roles.check(db, actor.user.id, operation, on: organization.id)
+    end
+  end
+end

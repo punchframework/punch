@@ -1,0 +1,104 @@
+# Punch
+
+> Punch is a SQLite-first, single-node web framework for Crystal. An app is typed operations (Queries and Commands) over named SQL, served as HTML pages for people, markdown for agents, and JSON with an OpenAPI document for programs, from one static binary.
+
+In an app, these pages are at `lib/punch/docs/`. Every path below is relative to this file. Punch 0.x is not released: anything may change between minor versions.
+
+## Start here
+
+- [Punch documentation](README.md): the front page for people: how the documentation is organised, and where to start as which reader.
+- [Guides](guides/README.md): the guides by group, from a first app to production.
+- [Application structure](structure.md): where code lives in an app, and why a type's name decides its file, route, and permission.
+- [Tooling](tooling.md): `punch new`, `punch generate`, `punch upgrade:diff`, `punch check`, `punch dev`, and the `PUNCH_*` settings.
+- [Operations and routing](operations.md): Queries and Commands, how their names become routes, and how to call one from another.
+
+## Guides
+
+- [Introduction](guides/introduction.md): what Punch is, its principles, what an app is in production, who it is for and not for, and where to start.
+- [Installing Punch](guides/installing.md): downloading the punch tool from a release and checking its checksum, the pinned Crystal release, building from source, and keeping databases on local disk.
+- [Getting Started with Punch](guides/getting-started.md): a first app from punch new to a passing punch check: a table, an entity, a Command and a Query, JSON, a page with a form, specs, and the working loop.
+- [Crystal for Punch Developers](guides/crystal-for-punch-developers.md): the Crystal a Punch app uses, structs, unions and case … in, annotations, generics, and the Ruby habits that do not carry over.
+- [How a Punch App Works](guides/how-a-punch-app-works.md): one request from the socket to the response and into the background, the storage directory, the two binaries, generated files, and the checks.
+- [Application Structure](guides/application-structure.md): slices, namespaces, and entities, where each kind of file goes, outlines, generated requires, punch generate, and the checks that keep the layout.
+- [Coming from Rails](guides/coming-from-rails.md): where each part of a Rails app maps in a Punch app, and what Punch deliberately lacks.
+- [Operations and Routing](guides/operations-and-routing.md): Queries and Commands, how names become routes, typed paths, what `call` can ask for, and pages sharing paths with Queries.
+- [Results, Errors, and Status Codes](guides/results-errors-and-status-codes.md): outcomes as types, statuses, Problem Details, violations as field errors, rollback, messages, and exceptions.
+- [Input and Domain Types](guides/input-and-domain-types.md): declaring an operation's input, what a refused input looks like, domain primitives, typed IDs and public IDs, money, and secrets.
+- [Building a JSON API](guides/building-a-json-api.md): what clients send and receive, the committed openapi.json, breaking changes, idempotency keys, 304 answers, tokens, and generated clients.
+- [SQLite in Punch](guides/sqlite-in-punch.md): the storage directory, readers and the writer, local disk, inspecting a database, and how far one machine goes.
+- [Migrations](guides/migrations.md): writing migrations, db/schema.sql, forward only, what a migration costs, keeping the previous release working, and Punch's own tables.
+- [Named Queries and Generated Code](guides/named-queries.md): SQL in .sql files, generated methods and their types, columns.cr, records and Table, uniqueness as a typed result, and reading generated files.
+- [Domain Models](guides/domain-models.md): a model decides and an operation orchestrates; behaviour on records, one type per state, stores, behaviour modules for lists, and where each rule goes.
+- [Composites: Value Types on a Row](guides/composites.md): value types of several fields, stored as a group of columns or a JSON document; snapshots, bounded maps, one of several shapes, typed paths, and versions.
+- [Text and Sort Order](guides/text-and-sort-order.md): normalization, collations in the schema, case-insensitive search beyond ASCII, and collation versions.
+- [Keeping SQL Safe and Fast](guides/keeping-sql-safe-and-fast.md): no values in SQL text, declared sorts and filters, LikeText, query plans, and auditing stored values.
+- [Pages and Components](guides/pages-and-components.md): pages that call operations, components instead of templates, layouts and chrome, typed links, and page specs.
+- [Forms](guides/forms.md): forms bound to Commands, holding pages, 303 or the page again, field errors, rows, idempotent forms, and form specs.
+- [Uploading Files](guides/uploading-files.md): kinds of upload, grants, a file field in a form, claiming, keeping a file whole, private names, images, scanning, showing and giving up a file, and the bucket.
+- [Assets and JavaScript](guides/assets-and-javascript.md): the asset directory, fingerprints, stylesheets, ES modules through the import map, Turbo, and the Content-Security-Policy.
+- [Turbo Frames, Streams, and Live Pages](guides/turbo-frames-streams-and-live-pages.md): frames, streams after forms, live pages decided per viewer, and their limits.
+- [Translations and Formats](guides/translations-and-formats.md): locale files, generated accessors, adding a language, choosing a language, messages from codes, and formatting money and dates.
+- [Pages for Agents](guides/pages-for-agents.md): pages as markdown, action blocks, acting, /llms.txt, and tokens for agents.
+- [Domain Events](guides/domain-events.md): events as facts, publishing from Commands, the three deliveries, the event graph, and testing events.
+- [Background Jobs](guides/background-jobs.md): moving work out of the request, the outbox, jobs that run twice safely, schedules, concurrency limits, payload versions, and testing jobs.
+- [Mail](guides/mail.md): mail as a component, sending from a job in the recipient's language, settings, captured mail, and testing mail.
+- [Inbound Webhooks](guides/inbound-webhooks.md): providers, receiving first and processing later, signatures, duplicates, failures, and testing deliveries.
+- [Caching](guides/caching.md): what to cache, stores and fetch, forgetting by events, correctness with an empty cache, and conditional requests.
+- [Securing Punch Applications](guides/securing-punch-applications.md): what Punch handles for you, what stays yours, the checks that fail, proxies, and a checklist before going live.
+- [Authentication](guides/authentication.md): the actor, sessions and API tokens, checking passwords outside the transaction, mailed links, the second factor, and the cross-site check.
+- [Authorization and Roles](guides/authorization-and-roles.md): policies on every operation, 404 versus 403, grants, pages that ask the same policy, lists in SQL, and roles per organization.
+- [Credentials and Keys](guides/credentials-and-keys.md): declaring what the app needs, where values come from, the creds commands, signing stateless links, and rotating keys.
+- [Column Encryption and Blind Indexes](guides/column-encryption.md): what encryption protects, encrypted columns, blind indexes, converting a plaintext column, and rotating keys.
+- [Rate Limits](guides/rate-limits.md): limits on operations, choosing keys and stores, 429 answers, limits on open Commands, unlocking, and testing.
+- [Configuring Punch Applications](guides/configuring-punch-applications.md): settings versus credentials, punch config, how a bad setting stops the boot, and the settings that matter in production.
+- [Deploying](guides/deploying.md): the binary and its image, how a deploy hands over without dropping requests, Kamal, Caddy and systemd, and checks after a deploy.
+- [Backup and Restore](guides/backup-and-restore.md): turning backups on, checking replication, the nightly restore check, the restore runbook, and recovery mode.
+- [Tracing and Metrics](guides/tracing-and-metrics.md): wide events per request and job, seeing traces, adding fields and spans, exporting over OTLP, and the metrics to watch.
+- [The Ops Console and punch ops](guides/the-ops-console.md): access by role, what the console shows, punch ops, runbooks, alerting by events, and agents.
+- [Evolving a Live App](guides/evolving-a-live-app.md): the rule every change follows, adding entities and columns, renaming and removing columns in three releases, stricter types, new states, payloads, API versions, keys, rolling back, and failed or damaging migrations.
+- [Testing Punch Applications](guides/testing-punch-applications.md): a fresh database per example, endpoint specs and the contract check, pages, background work, time, and what to test at which level.
+- [punch check and the Command Line](guides/punch-check-and-the-command-line.md): the two binaries, the development loop, every check and its honest fix, generated files, --json for agents, and CI.
+- [When the Compiler Says No](guides/when-the-compiler-says-no.md): reading compile errors, the most common messages and their honest fixes, and what punch check reports.
+- [Working with Coding Agents](guides/working-with-coding-agents.md): what a new app gives an agent, extending AGENTS.md, the honest loop, reviewing an agent's change, and requests an agent can finish.
+- [The Reference Slice, Annotated](guides/the-reference-slice-annotated.md): one complete entity read file by file, in the order you would write it.
+- [Glossary](guides/glossary.md): the words the guides and Punch's messages use, one definition each.
+
+## Reference
+
+- [Assets](assets.md): stylesheets, images, fonts, and JavaScript modules embedded in the binary and served under fingerprinted URLs.
+- [Authentication](auth.md): sessions, API tokens, one-time tokens, password hashing, two-factor sign-in, and the actor of a request.
+- [Authorization](authorization.md): the policy every operation declares, grants, roles, and links and forms that ask the same policy.
+- [Backup](backup.md): Litestream replication to S3-compatible storage, restores, restore drills, and recovery.
+- [Cache](cache.md): typed stores for expensive values and conditional requests for Query results.
+- [Composites](composites.md): value types stored as groups of columns or JSON documents, bounded lists and maps, polymorphic ones, typed paths, and versions.
+- [Core types](core-types.md): domain primitives, `Punch::Invalid` and `Punch::Rejection`, typed IDs and public IDs, money, and secrets.
+- [Credentials](credentials.md): what an app needs from its deployment, declared as a type, checked before it starts, kept in encrypted files.
+- [Deployment](deployment.md): one static binary behind a reverse proxy, deploys without downtime, Docker and Kamal.
+- [Domain events](events.md): typed events published in a Command's transaction, subscribers, and the outbox.
+- [HTTP kernel](http.md): the server, request bodies and their limits, headers, draining on shutdown.
+- [Input](input.md): an operation's input struct, its parsing from path, query string, form, or JSON, and cross-field checks.
+- [Background jobs](jobs.md): typed jobs in `queue.db`, retries, recurring schedules, concurrency limits, and the payload lock.
+- [JSON Schema](json-schema.md): schemas derived from Crystal types for OpenAPI, forms, and job payloads.
+- [Key ring](keys.md): the root secret, keys derived from it, signed values, rotation, and the public-ID key.
+- [Mail](mail.md): mail as a component with HTML and text parts, delivered by a job, captured in development and specs.
+- [Metrics](metrics.md): the SQLite signals of each database's writer on the OpenTelemetry data model.
+- [Migrations and schema.sql](migrations.md): plain SQL migrations, `db/schema.sql`, the cost of a change, and keeping the previous release working.
+- [Domain models](models.md): a model decides, an operation orchestrates; records, state types, stores, and entity outlines.
+- [JSON endpoints and OpenAPI](openapi.md): results and their statuses, Problem Details, and the committed `openapi.json`.
+- [Ops data](ops.md): errors, job runs, events, and performance in `ops.db`, the ops console, and `punch ops`.
+- [Persistence](persistence.md): the vendored SQLite, connections, readers and writers, and the storage directory.
+- [Queries](queries.md): named SQL turned into typed Crystal, records, declared filters and orders, keyset pages, and uniqueness violations.
+- [Rate limits](rate-limits.md): how often an operation may run for one key, counted by GCRA, answered with 429.
+- [Testing](testing.md): `punch/spec`, the client, inputs, databases, mails, jobs, and the matchers.
+- [Text](text.md): collations, case-insensitive matching, and text normalized at the boundary.
+- [Tracing and wide events](tracing.md): one trace per request, its wide event, child spans, and export to OpenTelemetry.
+- [Translations and formats](translations.md): messages per language from codes, and dates, numbers, and money in each language's format.
+- [Views and pages](views.md): pages, components, forms, Turbo Frames and Streams, live pages, and the markdown surface for agents.
+- [Inbound webhooks](webhooks.md): deliveries stored at once and processed later through the outbox, verified, and never processed twice.
+- [Uploads](uploads.md): files sent from the browser straight to S3-compatible storage, checked by their first bytes, claimed and kept by the app with their names, held back until a scan passes them, and served by the storage.
+
+## Optional
+
+- [Compile errors](reference/compile-errors.md): every message of Punch's compile-time checks, by topic, with the smallest program that gives it.
+- [Lint rules](reference/lint-rules.md): Punch's Ameba rules and what each reports.
+- [punch check steps](reference/check-steps.md): every step of `punch check`, what it does, and when it runs.

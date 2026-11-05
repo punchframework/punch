@@ -1,0 +1,37 @@
+# `punch check` on every push: format, lint, the generated files, the
+# build, the specs, and the rest (lib/punch/docs/tooling.md).
+name: check
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      # The whole history, so `punch check` finds origin/main and compares
+      # the API, job payloads, and migrations against it; a shallow clone
+      # has no base and skips those comparisons.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Read the Crystal version
+        id: crystal
+        run: echo "version=$(awk '$1 == "crystal" { print $2 }' .tool-versions)" >> "$GITHUB_OUTPUT"
+      - uses: crystal-lang/install-crystal@v1
+        with:
+          crystal: ${{ steps.crystal.outputs.version }}
+      # libxml2 for the HTML matchers of punch/spec.
+      - run: sudo apt-get install -y libxml2-dev
+      - uses: actions/cache@v4
+        with:
+          path: lib
+          key: shards-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('shard.lock', '.tool-versions') }}
+      - run: shards install
+      # The release's tool of the app's Punch, checked against the
+      # release's SHA256SUMS (built from lib/punch where there is none).
+      - run: scripts/punch-tool.sh
+      - run: lib/punch/bin/punch check
+        env:
+          CRYSTAL_WORKERS: "4"

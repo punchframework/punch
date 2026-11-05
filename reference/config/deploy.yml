@@ -1,0 +1,67 @@
+# Kamal 2 (lib/punch/docs/deployment.md): the image from ../Dockerfile on one host,
+# behind kamal-proxy, which terminates TLS, waits for the new container's
+# /up, switches traffic, and drains the old container before Kamal stops it.
+# Both containers share the volume during the switch: two processes on the
+# same SQLite files, as Punch expects.
+service: invoicing
+image: example/invoicing
+
+servers:
+  web:
+    hosts:
+      - 192.0.2.10
+  # A separate jobs process, optional; then set PUNCH_JOBS=off for web.
+  # Events its jobs commit (a payment from the webhook) then no longer
+  # reach pages open in browsers, which update on the next load.
+  # jobs:
+  #   hosts:
+  #     - 192.0.2.10
+  #   cmd: jobs
+
+proxy:
+  ssl: true
+  host: invoices.example.org
+  app_port: 3000
+  # With TLS on, kamal-proxy only forwards X-Forwarded-For when asked; the
+  # app trusts it from the kamal network (PUNCH_TRUSTED_PROXIES below).
+  forward_headers: true
+  healthcheck:
+    path: /up
+    interval: 1
+    timeout: 5
+  response_timeout: 30
+
+# Kamal waits this long for requests on the old container, then stops it
+# with SIGTERM; the app drains for up to PUNCH_SHUTDOWN_TIMEOUT_SECONDS.
+drain_timeout: 30
+# Pending migrations run at boot, before /up turns 200.
+deploy_timeout: 120
+
+registry:
+  server: ghcr.io
+  username: example
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+# Punch is a path dependency of the reference app, so the build context is
+# Punch's root; an app with Punch from Git builds from its own directory.
+builder:
+  arch: amd64
+  context: ..
+  dockerfile: Dockerfile
+
+volumes:
+  - invoicing_data:/data
+
+env:
+  clear:
+    PUNCH_PUBLIC_URL: https://invoices.example.org
+    # The subnet of Docker's `kamal` network (docker network inspect kamal).
+    PUNCH_TRUSTED_PROXIES: 172.18.0.0/16
+    PUNCH_BACKUP_URL: s3://example-backups/invoicing
+  secret:
+    # The credentials file's key, or the credentials themselves as
+    # variables (SECRET_KEY_BASE, ISSUER__NAME, MAIL__...).
+    - PUNCH_MASTER_KEY
+    - AWS_ACCESS_KEY_ID
+    - AWS_SECRET_ACCESS_KEY

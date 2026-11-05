@@ -1,0 +1,50 @@
+module Invoicing
+  # The frame of every page: the document with the app's stylesheet and
+  # Turbo, navigation for a signed-in user, and the content in `<main>`,
+  # in the request's language (`v.t`). Navigation is chrome, which pages
+  # that agents read leave out. A live page passes *morph*, so
+  # Turbo morphs it when a change refreshes it.
+  struct Layout
+    include Punch::Component
+
+    def initialize(@title : String, @actor : Actor? = nil, *, @morph : Bool = false)
+    end
+
+    def view(v : Punch::View, &) : Nil
+      v.document(@title, stylesheets: {Punch.asset("app.css")}, morph: @morph) do
+        if actor = @actor
+          t = v.t.layout
+          v.chrome do |chrome|
+            chrome.header do
+              chrome.img src: Punch.asset("images/mark.svg").href, alt: ""
+              chrome.nav(aria: {label: t.main}) do
+                chrome.a t.invoices, href: Billing::Invoices::IndexPage.href
+                chrome.text " "
+                chrome.a t.customers, href: Billing::Customers::IndexPage.href
+                chrome.text " "
+                chrome.a t.profile, href: Billing::Profiles::UpdatePage.href
+                # Shown to operators only: the link asks the console's policy.
+                chrome.text " "
+                chrome.a t.ops, href: Punch::Ops::Console::IndexPage.href
+              end
+              chrome.p do
+                chrome.text "#{t.signed_in_as} "
+                chrome.strong actor.user.name.to_s
+                if organization = actor.organization
+                  chrome.text " #{t.in_organization} "
+                  chrome.strong organization.name.to_s
+                end
+                chrome.text " "
+                chrome.a t.organizations, href: Accounts::Organizations::IndexPage.href
+                chrome.text " "
+                chrome.a t.account, href: Accounts::Sessions::IndexPage.href
+              end
+              chrome.form(Accounts::Sessions::SignOut.action) { |form| form.submit t.sign_out }
+            end
+          end
+        end
+        v.main { yield }
+      end
+    end
+  end
+end

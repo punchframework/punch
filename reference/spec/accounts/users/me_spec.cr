@@ -1,0 +1,30 @@
+require "../../spec_helper"
+
+describe "signing in to the API" do
+  it "knows the user of a session" do
+    user = AccountsSpec.user("Ingrid")
+    response = Punch::Spec.client.sign_in(user.id).get(Accounts::Users::Me.path)
+    response.json.should eq(JSON.parse(%({"id": #{user.id.value}, "name": "Ingrid", "via": "session"})))
+  end
+
+  it "takes an API token as a bearer token, and refuses one that is not valid" do
+    user = AccountsSpec.user
+    token = Punch::Spec.api_token(user.id)
+    token.should start_with("inv_")
+    client = Punch::Spec.client
+    client.get(Accounts::Users::Me.path, headers: Punch::Spec.bearer(token)).json["via"].should eq("token")
+
+    Punch::Spec.db.write { |db| Punch::Auth::APITokens.revoke_all(db, user.id.value) }
+    refused = client.get(Accounts::Users::Me.path, headers: Punch::Spec.bearer(token))
+    refused.status.should eq(HTTP::Status::UNAUTHORIZED)
+    refused.headers["WWW-Authenticate"].should eq(%(Bearer error="invalid_token"))
+  end
+
+  it "signs a user out everywhere when their sessions are revoked" do
+    user = AccountsSpec.user
+    client = Punch::Spec.client.sign_in(user.id)
+    client.get(Accounts::Users::Me.path).status.should eq(HTTP::Status::OK)
+    Punch::Spec.db.write { |db| Punch::Auth::Sessions.revoke_all(db, user.id.value) }
+    client.get(Accounts::Users::Me.path).status.should eq(HTTP::Status::UNAUTHORIZED)
+  end
+end

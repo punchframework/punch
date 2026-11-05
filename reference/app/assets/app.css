@@ -1,0 +1,56 @@
+/* The reference app's one stylesheet. References to other assets are
+   relative; Punch points them at fingerprinted URLs. */
+:root {
+  --ink: #1d2433;
+  --muted: #5b6475;
+  --line: #d8dce3;
+  --accent: #1f4e79;
+  --danger: #b42318;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--ink);
+  line-height: 1.5;
+}
+
+body { margin: 0 auto; max-width: 60rem; padding: 0 1rem 3rem; }
+
+header {
+  display: flex; align-items: center; gap: 1.5rem; padding: 1rem 0; border-bottom: 1px solid var(--line);
+  & nav a { margin-right: 1rem; color: var(--accent); }
+  & p { margin: 0 0 0 auto; color: var(--muted); }
+  & img { width: 1.5rem; height: 1.5rem; }
+}
+
+table {
+  border-collapse: collapse; width: 100%; margin: 1rem 0;
+  &.lines :is(td:nth-child(n+3), tfoot td) { text-align: right; }
+}
+th, td { text-align: left; padding: 0.4rem 0.6rem; border-bottom: 1px solid var(--line); }
+
+tr.overdue td:first-child { padding-left: 1.4rem; background: url(images/dot.svg) no-repeat 0.4rem center / 0.5rem; }
+.overdue { color: var(--danger); }
+
+dl.facts {
+  display: grid; grid-template-columns: max-content 1fr; gap: 0.25rem 1rem;
+  & dd { margin: 0; }
+}
+
+form {
+  & label { display: block; margin-top: 0.75rem; font-weight: 600; }
+  & :is(input, select, textarea) { font: inherit; padding: 0.3rem 0.4rem; }
+  & [aria-invalid="true"] { border-color: var(--danger); }
+  & ul { color: var(--danger); }
+  &.danger button { color: var(--danger); }
+}
+/* Required fields are marked, a field with errors names itself in red. */
+.field:has(:required) > label::after { content: " *"; color: var(--muted); }
+.field:has([aria-invalid="true"]) > label { color: var(--danger); }
+button { font: inherit; padding: 0.35rem 0.9rem; margin-top: 1rem; }
+
+.actions { display: flex; gap: 1rem; }
+
+/* The error summary fades in when a form comes back with errors. */
+.form-errors {
+  transition: opacity 0.2s, translate 0.2s;
+  @starting-style { opacity: 0; translate: 0 -0.5rem; }
+  @media (prefers-reduced-motion: reduce) { transition: none; }
+}

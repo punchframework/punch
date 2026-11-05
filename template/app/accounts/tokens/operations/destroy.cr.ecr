@@ -1,0 +1,20 @@
+module Accounts::Tokens
+  # Revokes one of the user's tokens at once: the next request with it is
+  # refused (401). A token may revoke itself.
+  @[Punch::Authorize(Own)]
+  struct Destroy < Punch::Command
+    struct Input
+      include Punch::Input
+
+      @[Punch::PathParam]
+      getter token_id : Int64
+    end
+
+    alias Output = Nil
+
+    def call(input : Input, db : Punch::Writer, actor : <%= app.module_name %>::Actor, _grant : Punch::Grant(Destroy)) : Output
+      Punch::Auth::APITokens.revoke(db, input.token_id, user_id: actor.user.id.value)
+      nil
+    end
+  end
+end

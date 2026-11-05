@@ -1,0 +1,34 @@
+module Accounts::Sessions
+  @[Punch::Status(404)]
+  struct NotFound
+    include Punch::Problem
+  end
+
+  # Ends one of the user's own sessions; ending this browser's signs it
+  # out.
+  @[Punch::Authorize(Own)]
+  struct Destroy < Punch::Command
+    struct Input
+      include Punch::Input
+
+      @[Punch::PathParam]
+      getter session_id : Int64
+    end
+
+    alias Output = SignedOut | NotFound?
+
+    def call(input : Input, db : Punch::Writer, actor : <%= app.module_name %>::Actor, auth : Punch::Auth::Authentication, _grant : Punch::Grant(Destroy),
+             events : Punch::Events(Punch::Auth::SessionRevoked)) : Output
+      revoked = Punch::Auth::SessionRevoked.new(actor.user.id.value, input.session_id, "revoked")
+      if actor.principal.session.try(&.id) == input.session_id
+        auth.sign_out
+        events.publish(revoked)
+        return SignedOut.new
+      end
+      return NotFound.new unless Punch::Auth::Sessions.revoke(db, input.session_id, user_id: actor.user.id.value)
+
+      events.publish(revoked)
+      nil
+    end
+  end
+end

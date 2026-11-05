@@ -1,0 +1,17 @@
+en:
+  greeting: "Hello, %{name}!"
+  inbox:
+    title: "Inbox"
+    messages:
+      zero: "No messages"
+      one: "%{count} message"
+      other: "%{count} messages in %{folder}"
+  errors:
+    wrong_amount: "Does not match the total of %{total}."
+  problems:
+    already_sent: "This was already sent."
+  fields:
+    company_name: "Company"
+  punch:
+    errors:
+      blank: "Please fill this in."

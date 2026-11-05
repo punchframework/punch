@@ -1,0 +1,6 @@
+name: tiny
+version: 0.1.0
+
+targets:
+  tiny:
+    main: src/tiny.cr

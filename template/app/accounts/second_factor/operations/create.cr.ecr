@@ -1,0 +1,21 @@
+module Accounts::SecondFactor
+  # Begins adding an authenticator app: a new secret and recovery codes,
+  # shown on `SetupPage` until a code from the app confirms them
+  # (`Confirm`). Needs a recent sign-in.
+  @[Punch::Authorize(Punch::RecentlyAuthenticated)]
+  @[Punch::RateLimit(10, per: 1.hour, by: :actor)]
+  struct Create < Punch::Command
+    struct Input
+      include Punch::Input
+    end
+
+    alias Output = Started | Punch::Auth::SecondFactorEnabled
+
+    def call(input : Input, db : Punch::Writer, actor : <%= app.module_name %>::Actor, _grant : Punch::Grant(Create)) : Output
+      case setup = Punch::Auth::SecondFactors.start(db, actor.user.id)
+      in Punch::Auth::SecondFactorEnabled then setup
+      in Punch::Auth::TOTPSetup           then Started.new
+      end
+    end
+  end
+end

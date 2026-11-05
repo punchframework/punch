@@ -1,0 +1,50 @@
+module Accounts::Passwords
+  struct ResetView
+    include Punch::Component
+
+    def initialize(@token : String, @valid : Bool)
+    end
+
+    def view(v : Punch::View) : Nil
+      t = v.t.accounts.passwords
+      v.render <%= app.module_name %>::Layout.new(t.reset_title) do
+        v.h1 t.reset_title
+        if @valid
+          v.form(Reset.action, values: {token: @token}) do |form|
+            form.field :token, as: :hidden
+            form.field :password, label: t.new_password, hint: v.t.accounts.sign_up.password_hint(min: Punch::Auth::NewPassword::MIN)
+            form.submit t.reset
+          end
+        else
+          v.p v.t.accounts.link_expired
+          v.p { v.a v.t.accounts.password_resets.create.title, href: PasswordResets::CreatePage.href }
+        end
+      end
+    end
+  end
+
+  # `GET /accounts/passwords/reset?token=…`, the link in a reset mail: a
+  # form for the new password. It only looks the token up; `Reset` uses
+  # it.
+  @[Punch::Public]
+  struct ResetPage < Punch::Page
+    struct Input
+      include Punch::Input
+
+      # Without one, the page shows the form again after a refused
+      # password; the refused form still holds the token.
+      getter token : String?
+    end
+
+    alias Output = ResetView
+
+    def call(input : Input, db : Punch::Reader) : Output
+      token = input.token || return ResetView.new("", true)
+      ResetView.new(token, !LinkStore.holder(Punch::Auth::OneTimeTokens.find(db, Links::PASSWORD_RESET, token), db).nil?)
+    end
+
+    def self.redirect(result : ResetDone) : Punch::Href
+      Sessions::CreatePage.href
+    end
+  end
+end

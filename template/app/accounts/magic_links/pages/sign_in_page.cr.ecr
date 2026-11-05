@@ -1,0 +1,53 @@
+module Accounts::MagicLinks
+  struct SignInView
+    include Punch::Component
+
+    def initialize(@token : String, @valid : Bool)
+    end
+
+    def view(v : Punch::View) : Nil
+      t = v.t.accounts.magic_links
+      v.render <%= app.module_name %>::Layout.new(t.title) do
+        v.h1 t.title
+        if @valid
+          v.form(SignIn.action, values: {token: @token}) do |form|
+            form.field :token, as: :hidden
+            form.submit t.sign_in
+          end
+        else
+          v.p v.t.accounts.link_expired
+          v.p { v.a t.send_link, href: CreatePage.href }
+        end
+      end
+    end
+  end
+
+  # `GET /accounts/magic_links/sign_in?token=…`, the link in a sign-in
+  # mail. It only looks the token up; the button (`SignIn`) uses it.
+  @[Punch::Public]
+  struct SignInPage < Punch::Page
+    struct Input
+      include Punch::Input
+
+      # Optional, so a refused button can show this page again.
+      getter token : String?
+    end
+
+    alias Output = SignInView
+
+    def call(input : Input, db : Punch::Reader) : Output
+      token = input.token || ""
+      SignInView.new(token, !LinkStore.holder(Punch::Auth::OneTimeTokens.find(db, Links::MAGIC_LINK, token), db).nil?)
+    end
+
+    def self.redirect(result : Sessions::SignedIn) : Punch::Href
+      Home::IndexPage.href
+    end
+
+<%- if app.second_factor? -%>
+    def self.redirect(result : Punch::Auth::SecondFactorRequired) : Punch::Href
+      SecondFactor::SignInPage.href
+    end
+<%- end -%>
+  end
+end

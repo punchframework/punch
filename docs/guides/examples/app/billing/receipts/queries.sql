@@ -1,0 +1,4 @@
+-- Named queries of Billing::Receipts (lib/punch/docs/queries.md): each starts with
+-- `-- name: Name :one|:many|:page|:exec|:execrows`, and `punch
+-- db:generate` turns it into a typed method. Billing::Receipts::Table already
+-- finds, inserts, updates, and deletes one row.

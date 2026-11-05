@@ -1,0 +1,73 @@
+module Accounts::Sessions
+  struct ReauthenticateView
+    include Punch::Component
+
+<%- if app.second_factor? -%>
+    def initialize(@actor : <%= app.module_name %>::Actor, @second_factor : Bool)
+<%- else -%>
+    def initialize(@actor : <%= app.module_name %>::Actor)
+<%- end -%>
+    end
+
+    def view(v : Punch::View) : Nil
+      t = v.t.accounts.sessions.reauthenticate
+      v.render <%= app.module_name %>::Layout.new(t.title, @actor) do
+        v.h1 t.title
+<%- if app.second_factor? -%>
+        if @second_factor
+          v.p t.with_code
+          v.form(SecondFactor::Reauthenticate.action) do |form|
+            form.field :code, label: v.t.accounts.second_factor.code, hint: v.t.accounts.second_factor.code_hint
+            form.submit t.submit
+          end
+        else
+          v.p t.with_password
+          v.form(Reauthenticate.action) do |form|
+            form.field :current_password, label: v.t.accounts.passwords.current_password
+            form.submit t.submit
+          end
+        end
+<%- else -%>
+        v.p t.with_password
+        v.form(Reauthenticate.action) do |form|
+          form.field :current_password, label: v.t.accounts.passwords.current_password
+          form.submit t.submit
+        end
+<%- end -%>
+      end
+    end
+  end
+
+  # `GET /accounts/sessions/reauthenticate`: proving again who you are before a
+<%- if app.second_factor? -%>
+  # change that needs a recent authentication, with the authenticator app
+  # when the user has one, else with the password.
+<%- else -%>
+  # change that needs a recent authentication, with the password.
+<%- end -%>
+  @[Punch::Authorize(Punch::SignedIn)]
+<%- if app.second_factor? -%>
+  @[Punch::Forms(Reauthenticate, SecondFactor::Reauthenticate)]
+<%- else -%>
+  @[Punch::Forms(Reauthenticate)]
+<%- end -%>
+  struct ReauthenticatePage < Punch::Page
+    struct Input
+      include Punch::Input
+    end
+
+    alias Output = ReauthenticateView
+
+    def call(input : Input, db : Punch::Reader, actor : <%= app.module_name %>::Actor) : Output
+<%- if app.second_factor? -%>
+      ReauthenticateView.new(actor, Punch::Auth::SecondFactors.enabled?(db, actor.user.id))
+<%- else -%>
+      ReauthenticateView.new(actor)
+<%- end -%>
+    end
+
+    def self.redirect(result : Reauthenticated) : Punch::Href
+      Sessions::IndexPage.href
+    end
+  end
+end

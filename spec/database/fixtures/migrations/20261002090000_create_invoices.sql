@@ -1,0 +1,5 @@
+CREATE TABLE invoices (
+  id INTEGER PRIMARY KEY,
+  customer_id INTEGER NOT NULL REFERENCES customers (id) ON DELETE CASCADE,
+  total_cents INTEGER NOT NULL
+) STRICT;

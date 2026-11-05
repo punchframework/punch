@@ -1,0 +1,60 @@
+module Accounts::Roles
+  # Runs the app: the ops console at /_punch<%= app.organizations? ? ", in every organization and\n  # outside them" : "" %>. Given on the box with `punch roles:assign
+  # Accounts::Roles::Operator --email ADDRESS`; `db/seeds.cr` gives it to
+  # the development user.
+  struct Operator
+    include Punch::Role
+
+    permits Punch::Ops::Console::Operations
+  end
+<%- if app.organizations? -%>
+
+  # Sees the organization and who belongs to it. List what a member may
+  # read of the app's own slices here as they come.
+  struct Member
+    include Punch::Role
+
+    scope Organizations::ID
+    permits Organizations::Switch, Organizations::Members::Index, Organizations::Members::IndexPage
+  end
+
+  # A member who also changes things. List the Commands of the app's own
+  # slices here as they come.
+  struct Editor
+    include Punch::Role
+
+    scope Organizations::ID
+    permits Member
+  end
+
+  # An editor who also decides who belongs to the organization, in
+  # which role.
+  struct Administrator
+    include Punch::Role
+
+    scope Organizations::ID
+    permits Editor, Organizations::Members::Create, Organizations::Members::Destroy
+  end
+
+  # The role a member holds, as requests and forms name it. Each member
+  # holds one: they include each other.
+  enum Name
+    Member
+    Editor
+    Administrator
+
+    # The role's name in `punch_role_assignments`.
+    def stored : String
+      case self
+      in .member?        then Punch::Roles.role_name(Roles::Member)
+      in .editor?        then Punch::Roles.role_name(Roles::Editor)
+      in .administrator? then Punch::Roles.role_name(Roles::Administrator)
+      end
+    end
+
+    def self.stored?(role : String) : self?
+      values.find { |name| name.stored == role }
+    end
+  end
+<%- end -%>
+end

@@ -1,0 +1,16 @@
+# The build context is Punch's root (reference/Dockerfile). Only sources go
+# in: no build output, installed shards, databases, or credential keys.
+**/*.key
+**/.git
+**/lib
+**/bin
+**/tmp
+**/storage
+**/*.db
+**/*.db-*
+**/*.dwarf
+build
+spec
+reference/spec
+reference/bench
+docs

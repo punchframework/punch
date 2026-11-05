@@ -1,0 +1,11 @@
+/lib/
+/bin/
+/.shards/
+/tmp/
+/storage/
+*.dwarf
+/config/credentials/*.key
+# What an interrupted creds:rekey or write leaves: a new key, temporary files.
+/config/credentials/*.key.*
+/config/credentials/*.tmp
+.DS_Store

@@ -1,0 +1,11 @@
+module Accounts::Tokens
+  # A user sees and revokes only their own tokens; another user's token
+  # is not found, so token IDs reveal nothing (lib/punch/docs/authorization.md).
+  struct Own
+    include Punch::Policy
+
+    def self.check(actor : <%= app.module_name %>::Actor, db : Punch::Reader | Punch::Writer, *, token_id : Int64) : Punch::Policy::Decision
+      Punch::Auth::APITokens.list(db, actor.user.id.value).any?(&.id.== token_id) ? allow : not_found
+    end
+  end
+end

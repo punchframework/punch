@@ -1,0 +1,52 @@
+# One app process on the port named by the instance: invoicing@3000 and
+# invoicing@3001 take turns during a deploy (deploy.sh, lib/punch/docs/deployment.md).
+# Install to /etc/systemd/system/, the settings to /etc/invoicing/env
+# (PUNCH_PUBLIC_URL, PUNCH_MASTER_KEY, PUNCH_BACKUP_URL, AWS_*), mode 0600.
+[Unit]
+Description=Invoicing on port %i
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=exec
+User=invoicing
+Group=invoicing
+EnvironmentFile=/etc/invoicing/env
+Environment=PUNCH_ENV=production
+Environment=PUNCH_STORAGE=/var/lib/invoicing
+Environment=PUNCH_PORT=%i
+Environment=PUNCH_TRUSTED_PROXIES=127.0.0.1
+Environment=PUNCH_DRAIN_DELAY_SECONDS=3
+Environment=PUNCH_SHUTDOWN_TIMEOUT_SECONDS=25
+# The binary of the release this instance started with: deploy.sh points
+# `current` at a new one before starting the other instance.
+ExecStart=/opt/invoicing/current/invoicing serve
+# SIGTERM drains: 3 s accepting while /up says 503, then up to 25 s for
+# requests in progress, then jobs, outbox, and Litestream's last sync.
+# Only the app gets it (mixed): it stops Litestream after its last writes
+# (lib/punch/docs/backup.md).
+KillSignal=SIGTERM
+KillMode=mixed
+TimeoutStopSec=40
+Restart=on-failure
+RestartSec=2
+# Each connection and live stream holds a file descriptor; systemd's
+# default of 1024 would cap the app below its own limits
+# (lib/punch/docs/deployment.md).
+LimitNOFILE=65536
+
+StateDirectory=invoicing
+StateDirectoryMode=0700
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+
+[Install]
+WantedBy=multi-user.target

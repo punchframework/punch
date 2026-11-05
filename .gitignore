@@ -1,0 +1,7 @@
+/lib/
+/bin/
+/.shards/
+/docs/api/
+/tmp/
+*.dwarf
+/build/

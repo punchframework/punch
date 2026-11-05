@@ -1,0 +1,35 @@
+module Accounts::Organizations::Members
+  # The user holds no role in the organization.
+  @[Punch::Status(404)]
+  struct NotMember
+    include Punch::Problem
+  end
+
+  # Takes the user's role in the organization: they no longer see it.
+  # Members may leave by removing themselves; the last administrator stays.
+  @[Punch::Authorize(Removal)]
+  struct Destroy < Punch::Command
+    struct Input
+      include Punch::Input
+
+      @[Punch::PathParam]
+      getter organization_id : ID
+      @[Punch::PathParam]
+      getter user_id : Users::ID
+    end
+
+    alias Output = Removed | NotMember | LastAdministrator
+
+    def call(input : Input, db : Punch::Writer, actor : Invoicing::Actor, _grant : Punch::Grant(Destroy),
+             events : Punch::Events(Punch::Roles::Revoked)) : Output
+      organization = input.organization_id
+      return LastAdministrator.new if Store.last_administrator?(db, input.user_id, on: organization)
+
+      ended = Roles::Name.values.compact_map { |name| Store.take(db, input.user_id, name, on: organization) }
+      return NotMember.new if ended.empty?
+
+      ended.each { |assignment| events.publish(Punch::Roles::Revoked.new(assignment, actor.user.id)) }
+      Removed.new(organization, input.user_id, left: input.user_id == actor.user.id)
+    end
+  end
+end

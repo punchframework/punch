@@ -1,0 +1,41 @@
+module Accounts
+  # The one-time links of the auth slice (lib/punch/docs/auth.md): each a token for one
+  # purpose, stored hashed by Punch, single use. The token leaves only in
+  # the mail's link, as a query parameter (paths are traced, queries not).
+  module Links
+    VERIFY_EMAIL   = "verify_email"
+    PASSWORD_RESET = "password_reset"
+<%- if app.magic_links? -%>
+    MAGIC_LINK     = "magic_link"
+<%- end -%>
+
+    VERIFY_VALID = 3.days
+    RESET_VALID  = 1.hour
+<%- if app.magic_links? -%>
+    MAGIC_VALID  = 15.minutes
+<%- end -%>
+  end
+
+  # Reads what a one-time link stands for: a store, the one place outside
+  # operations that takes a database handle.
+  module LinkStore
+    # The user and address a token was issued for, if it is still valid and
+    # the address still belongs to that user.
+    def self.holder(token : Punch::Auth::OneTimeToken?, db : Punch::Reader | Punch::Writer) : {Users::ID, Punch::Email}?
+      token = token || return
+      user_id = token.user_id || return
+      email = token.subject.try { |subject| Punch::Email.parse(subject).as?(Punch::Email) } || return
+      identity = Punch::Auth::EmailIdentities.find(db, email) || return
+      return unless identity.user_id == user_id
+
+      {Users::ID.parse(user_id).as(Users::ID), email}
+    end
+  end
+
+  # 410 `link_expired`: a one-time link that was used, expired, or no
+  # longer fits its account.
+  @[Punch::Status(410)]
+  struct LinkExpired
+    include Punch::Problem
+  end
+end

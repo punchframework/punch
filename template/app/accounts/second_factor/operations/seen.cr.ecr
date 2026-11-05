@@ -1,0 +1,16 @@
+module Accounts::SecondFactor
+  # The user saved the new recovery codes: they are no longer shown, only
+  # their digests remain.
+  @[Punch::Authorize(Punch::SignedIn)]
+  struct Seen < Punch::Command
+    struct Input
+      include Punch::Input
+    end
+
+    alias Output = Nil
+
+    def call(input : Input, db : Punch::Writer, actor : <%= app.module_name %>::Actor, _grant : Punch::Grant(Seen)) : Output
+      Punch::Auth::SecondFactors.seen(db, actor.user.id)
+    end
+  end
+end

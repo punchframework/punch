@@ -1,0 +1,29 @@
+module Accounts::Sessions
+  # Proves again who the user is with their password (checked by Punch
+  # before the transaction, `Punch::Auth::OwnPasswordCheck`), for changes that
+<%- if app.second_factor? -%>
+  # need a recent authentication. For a user with an authenticator app
+  # this is not enough: they use `SecondFactor::Reauthenticate`.
+<%- else -%>
+  # need a recent authentication.
+<%- end -%>
+  @[Punch::Authorize(Punch::SignedIn)]
+  @[Punch::RateLimit(10, per: 15.minutes, by: :actor, store: :durable)]
+  struct Reauthenticate < Punch::Command
+    struct Input
+      include Punch::Input
+
+      getter current_password : Punch::Auth::Password
+    end
+
+    alias Output = Reauthenticated | Punch::Auth::InvalidCredentials
+
+    def call(input : Input, db : Punch::Writer, actor : <%= app.module_name %>::Actor, auth : Punch::Auth::Authentication, _grant : Punch::Grant(Reauthenticate),
+             password : Punch::Auth::OwnPasswordCheck) : Output
+      return Punch::Auth::InvalidCredentials.new unless password.confirm(db)
+
+      auth.renew(method: "password")
+      Reauthenticated.new
+    end
+  end
+end

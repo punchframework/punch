@@ -1,0 +1,46 @@
+module Accounts::Tokens
+  @[Punch::Status(201)]
+  record Created,
+    token : Entry,
+    # The token itself, here and nowhere else: only its digest is stored.
+    secret : String do
+    include JSON::Serializable
+  end
+
+  # Creates an API token for an agent or a script, acting as the user
+  # until it expires or is revoked (lib/punch/docs/views.md). A browser sees the token
+  # once, on the token page it lands on (`Punch::Auth::Reveal`); a JSON client
+  # in the answer. Needs a recent sign-in, so a token cannot make another.
+  # The user is told by mail.
+  @[Punch::Authorize(Punch::RecentlyAuthenticated)]
+  @[Punch::RateLimit(10, per: 1.hour, by: :actor, store: :durable)]
+  struct Create < Punch::Command
+    # How long a new token works, in days.
+    LIFETIMES = {7, 30, 90, 366}
+
+    struct Input
+      include Punch::Input
+
+      getter name : String
+      getter days : Int32 = 30
+    end
+
+    alias Output = Created | Punch::Rejection
+
+    def call(input : Input, db : Punch::Writer, actor : <%= app.module_name %>::Actor, reveal : Punch::Auth::Reveal,
+             _grant : Punch::Grant(Create), events : Punch::Events(TokenCreated)) : Output
+      return Punch::Rejection.new(Punch::Rejection::Path{"days"}, Punch::Invalid.new("invalid_choice")) unless LIFETIMES.includes?(input.days)
+
+      case created = Punch::Auth::APITokens.create(db, actor.user.id.value, input.name, Time.utc + input.days.days)
+      in Punch::Invalid
+        # The name is empty or long, or the lifetime beyond what the app allows.
+        Punch::Rejection.new(Punch::Rejection::Path{created.code == "out_of_range" ? "days" : "name"}, created)
+      in Tuple(Punch::Auth::APIToken, Punch::Secret(String))
+        token, secret = created
+        reveal.once(secret)
+        events.publish(TokenCreated.new(actor.user.id.value, token.name))
+        Created.new(Entry.new(token), secret.unwrap)
+      end
+    end
+  end
+end

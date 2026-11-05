@@ -1,0 +1,568 @@
+{
+  "types": {
+    "Accounts::Emails::NotifyAdded(Accounts::EmailAdded)": "Accounts::EmailAdded",
+    "Accounts::Emails::NotifyRemoved(Accounts::EmailRemoved)": "Accounts::EmailRemoved",
+    "Accounts::Emails::SendVerification(Accounts::EmailAdded)": "Accounts::EmailAdded",
+    "Accounts::MagicLinks::SendLink": "Accounts::MagicLinks::SendLink",
+    "Accounts::PasswordResets::SendLink": "Accounts::PasswordResets::SendLink",
+    "Accounts::Passwords::NotifyChanged(Punch::Auth::PasswordChanged)": "Punch::Auth::PasswordChanged",
+    "Accounts::SecondFactor::NotifyChanged(Punch::Auth::SecondFactorChanged)": "Punch::Auth::SecondFactorChanged",
+    "Accounts::Tokens::NotifyCreated(Accounts::TokenCreated)": "Accounts::TokenCreated",
+    "Billing::Invoices::MailInvoice(Billing::InvoiceSent)": "Billing::InvoiceSent",
+    "Billing::Invoices::Remind": "Billing::Invoices::Remind",
+    "Billing::Invoices::RemindOverdue": "Billing::Invoices::RemindOverdue",
+    "Punch::Auth::Purge": "Punch::Auth::Purge",
+    "Punch::Backup::Verify": "Punch::Backup::Verify",
+    "Punch::Caches::Trim": "Punch::Caches::Trim",
+    "Punch::Database::Audit::Run": "Punch::Database::Audit::Run",
+    "Punch::Database::Encryption::Run": "Punch::Database::Encryption::Run",
+    "Punch::Database::Upgrade::Run": "Punch::Database::Upgrade::Run",
+    "Punch::IdempotencyKeys::Purge": "Punch::IdempotencyKeys::Purge",
+    "Punch::Job::Queue::Purge": "Punch::Job::Queue::Purge",
+    "Punch::Ops::Notify": "Punch::Ops::Notify",
+    "Punch::Ops::Purge": "Punch::Ops::Purge",
+    "Punch::Webhook::Process": "Punch::Webhook::Process",
+    "Punch::Webhook::Purge": "Punch::Webhook::Purge"
+  },
+  "payloads": {
+    "Accounts::EmailAdded": {
+      "version": 1,
+      "schema": {
+        "$ref": "#/$defs/Accounts.EmailAdded",
+        "$defs": {
+          "Accounts.EmailAdded": {
+            "type": "object",
+            "properties": {
+              "user_id": {
+                "type": "integer",
+                "format": "int64"
+              },
+              "email": {
+                "type": "string",
+                "format": "idn-email",
+                "maxLength": 254
+              }
+            },
+            "required": [
+              "user_id",
+              "email"
+            ]
+          }
+        }
+      }
+    },
+    "Accounts::EmailRemoved": {
+      "version": 1,
+      "schema": {
+        "$ref": "#/$defs/Accounts.EmailRemoved",
+        "$defs": {
+          "Accounts.EmailRemoved": {
+            "type": "object",
+            "properties": {
+              "user_id": {
+                "type": "integer",
+                "format": "int64"
+              },
+              "email": {
+                "type": "string",
+                "format": "idn-email",
+                "maxLength": 254
+              }
+            },
+            "required": [
+              "user_id",
+              "email"
+            ]
+          }
+        }
+      }
+    },
+    "Accounts::MagicLinks::SendLink": {
+      "version": 1,
+      "schema": {
+        "$ref": "#/$defs/Accounts.MagicLinks.SendLink",
+        "$defs": {
+          "Accounts.MagicLinks.SendLink": {
+            "type": "object",
+            "properties": {
+              "user_id": {
+                "type": "integer",
+                "format": "int64"
+              },
+              "email": {
+                "type": "string",
+                "format": "idn-email",
+                "maxLength": 254
+              }
+            },
+            "required": [
+              "user_id",
+              "email"
+            ]
+          }
+        }
+      }
+    },
+    "Accounts::PasswordResets::SendLink": {
+      "version": 1,
+      "schema": {
+        "$ref": "#/$defs/Accounts.PasswordResets.SendLink",
+        "$defs": {
+          "Accounts.PasswordResets.SendLink": {
+            "type": "object",
+            "properties": {
+              "user_id": {
+                "type": "integer",
+                "format": "int64"
+              },
+              "email": {
+                "type": "string",
+                "format": "idn-email",
+                "maxLength": 254
+              }
+            },
+            "required": [
+              "user_id",
+              "email"
+            ]
+          }
+        }
+      }
+    },
+    "Accounts::TokenCreated": {
+      "version": 1,
+      "schema": {
+        "$ref": "#/$defs/Accounts.TokenCreated",
+        "$defs": {
+          "Accounts.TokenCreated": {
+            "type": "object",
+            "properties": {
+              "user_id": {
+                "type": "integer",
+                "format": "int64"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "user_id",
+              "name"
+            ]
+          }
+        }
+      }
+    },
+    "Billing::InvoiceSent": {
+      "version": 1,
+      "schema": {
+        "$ref": "#/$defs/Billing.InvoiceSent",
+        "$defs": {
+          "Billing.InvoiceSent": {
+            "type": "object",
+            "properties": {
+              "invoice_id": {
+                "type": "integer",
+                "format": "int64",
+                "minimum": 1
+              },
+              "customer_id": {
+                "type": "integer",
+                "format": "int64",
+                "minimum": 1
+              }
+            },
+            "required": [
+              "invoice_id",
+              "customer_id"
+            ]
+          }
+        }
+      }
+    },
+    "Billing::Invoices::Remind": {
+      "version": 1,
+      "schema": {
+        "$ref": "#/$defs/Billing.Invoices.Remind",
+        "$defs": {
+          "Billing.Invoices.Remind": {
+            "type": "object",
+            "properties": {
+              "invoice_id": {
+                "type": "integer",
+                "format": "int64",
+                "minimum": 1
+              }
+            },
+            "required": [
+              "invoice_id"
+            ]
+          }
+        }
+      }
+    },
+    "Billing::Invoices::RemindOverdue": {
+      "version": 1,
+      "schema": {
+        "$ref": "#/$defs/Billing.Invoices.RemindOverdue",
+        "$defs": {
+          "Billing.Invoices.RemindOverdue": {
+            "type": "object",
+            "properties": {}
+          }
+        }
+      },
+      "steps": [
+        {
+          "name": "remind",
+          "cursor": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          }
+        }
+      ]
+    },
+    "Punch::Auth::PasswordChanged": {
+      "version": 1,
+      "schema": {
+        "$ref": "#/$defs/Punch.Auth.PasswordChanged",
+        "$defs": {
+          "Punch.Auth.PasswordChanged": {
+            "type": "object",
+            "properties": {
+              "user_id": {
+                "type": "integer",
+                "format": "int64"
+              },
+              "reset": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "user_id",
+              "reset"
+            ]
+          }
+        }
+      }
+    },
+    "Punch::Auth::Purge": {
+      "version": 1,
+      "schema": {
+        "$ref": "#/$defs/Punch.Auth.Purge",
+        "$defs": {
+          "Punch.Auth.Purge": {
+            "type": "object",
+            "properties": {}
+          }
+        }
+      }
+    },
+    "Punch::Auth::SecondFactorChanged": {
+      "version": 1,
+      "schema": {
+        "$ref": "#/$defs/Punch.Auth.SecondFactorChanged",
+        "$defs": {
+          "Punch.Auth.SecondFactorChanged": {
+            "type": "object",
+            "properties": {
+              "user_id": {
+                "type": "integer",
+                "format": "int64"
+              },
+              "change": {
+                "$ref": "#/$defs/Punch.Auth.SecondFactorChanged.Change"
+              }
+            },
+            "required": [
+              "user_id",
+              "change"
+            ]
+          },
+          "Punch.Auth.SecondFactorChanged.Change": {
+            "type": "string",
+            "enum": [
+              "enabled",
+              "removed",
+              "recovery_codes"
+            ]
+          }
+        }
+      }
+    },
+    "Punch::Backup::Verify": {
+      "version": 1,
+      "schema": {
+        "$ref": "#/$defs/Punch.Backup.Verify",
+        "$defs": {
+          "Punch.Backup.Verify": {
+            "type": "object",
+            "properties": {}
+          }
+        }
+      }
+    },
+    "Punch::Caches::Trim": {
+      "version": 1,
+      "schema": {
+        "$ref": "#/$defs/Punch.Caches.Trim",
+        "$defs": {
+          "Punch.Caches.Trim": {
+            "type": "object",
+            "properties": {}
+          }
+        }
+      }
+    },
+    "Punch::Database::Audit::Run": {
+      "version": 1,
+      "schema": {
+        "$ref": "#/$defs/Punch.Database.Audit.Run",
+        "$defs": {
+          "Punch.Database.Audit.Run": {
+            "type": "object",
+            "properties": {}
+          }
+        }
+      }
+    },
+    "Punch::Database::Encryption::Run": {
+      "version": 1,
+      "schema": {
+        "$ref": "#/$defs/Punch.Database.Encryption.Run",
+        "$defs": {
+          "Punch.Database.Encryption.Run": {
+            "type": "object",
+            "properties": {}
+          }
+        }
+      },
+      "steps": [
+        {
+          "name": "rewrite",
+          "cursor": {
+            "$ref": "#/$defs/Punch.Database.Encryption.Run.Position",
+            "$defs": {
+              "Punch.Database.Encryption.Run.Position": {
+                "type": "object",
+                "properties": {
+                  "table": {
+                    "type": "string"
+                  },
+                  "after": {
+                    "type": "integer",
+                    "format": "int64"
+                  },
+                  "rows": {
+                    "type": "integer",
+                    "format": "int64"
+                  },
+                  "written": {
+                    "type": "integer",
+                    "format": "int64"
+                  },
+                  "findings": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "table",
+                  "after"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "Punch::Database::Upgrade::Run": {
+      "version": 1,
+      "schema": {
+        "$ref": "#/$defs/Punch.Database.Upgrade.Run",
+        "$defs": {
+          "Punch.Database.Upgrade.Run": {
+            "type": "object",
+            "properties": {}
+          }
+        }
+      },
+      "steps": [
+        {
+          "name": "rewrite",
+          "cursor": {
+            "$ref": "#/$defs/Punch.Database.Upgrade.Run.Position",
+            "$defs": {
+              "Punch.Database.Upgrade.Run.Position": {
+                "type": "object",
+                "properties": {
+                  "table": {
+                    "type": "string"
+                  },
+                  "after": {
+                    "type": "integer",
+                    "format": "int64"
+                  },
+                  "rows": {
+                    "type": "integer",
+                    "format": "int64"
+                  },
+                  "written": {
+                    "type": "integer",
+                    "format": "int64"
+                  },
+                  "findings": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "table",
+                  "after"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "Punch::IdempotencyKeys::Purge": {
+      "version": 1,
+      "schema": {
+        "$ref": "#/$defs/Punch.IdempotencyKeys.Purge",
+        "$defs": {
+          "Punch.IdempotencyKeys.Purge": {
+            "type": "object",
+            "properties": {}
+          }
+        }
+      }
+    },
+    "Punch::Job::Queue::Purge": {
+      "version": 1,
+      "schema": {
+        "$ref": "#/$defs/Punch.Job.Queue.Purge",
+        "$defs": {
+          "Punch.Job.Queue.Purge": {
+            "type": "object",
+            "properties": {}
+          }
+        }
+      }
+    },
+    "Punch::Ops::Notify": {
+      "version": 1,
+      "schema": {
+        "$ref": "#/$defs/Punch.Ops.Notify",
+        "$defs": {
+          "Punch.Ops.Notify": {
+            "type": "object",
+            "properties": {}
+          }
+        }
+      }
+    },
+    "Punch::Ops::Purge": {
+      "version": 1,
+      "schema": {
+        "$ref": "#/$defs/Punch.Ops.Purge",
+        "$defs": {
+          "Punch.Ops.Purge": {
+            "type": "object",
+            "properties": {}
+          }
+        }
+      }
+    },
+    "Punch::Webhook::Process": {
+      "version": 1,
+      "schema": {
+        "$ref": "#/$defs/Punch.Webhook.Process",
+        "$defs": {
+          "Punch.Webhook.Process": {
+            "type": "object",
+            "properties": {
+              "invocation_id": {
+                "type": "integer",
+                "format": "int64"
+              },
+              "provider": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "invocation_id",
+              "provider"
+            ]
+          }
+        }
+      }
+    },
+    "Punch::Webhook::Purge": {
+      "version": 1,
+      "schema": {
+        "$ref": "#/$defs/Punch.Webhook.Purge",
+        "$defs": {
+          "Punch.Webhook.Purge": {
+            "type": "object",
+            "properties": {}
+          }
+        }
+      }
+    }
+  },
+  "documents": {
+    "Billing::Invoices::BilledTo": {
+      "version": 1,
+      "schema": {
+        "$ref": "#/$defs/Billing.Invoices.BilledTo",
+        "$defs": {
+          "Billing.Invoices.BilledTo": {
+            "type": "object",
+            "properties": {
+              "customer_id": {
+                "type": "integer",
+                "format": "int64",
+                "minimum": 1
+              },
+              "name": {
+                "type": "string",
+                "pattern": "\\S"
+              },
+              "company_name": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "pattern": "\\S"
+              },
+              "address": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "pattern": "\\S"
+              },
+              "tax_id": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "pattern": "^ *[A-Za-z] *[A-Za-z]( *[A-Za-z0-9]){2,13} *$"
+              }
+            },
+            "required": [
+              "customer_id",
+              "name"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

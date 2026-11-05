@@ -1,0 +1,3 @@
+# For spec/lint: the fixtures, which the project's .ameba.yml excludes.
+Globs:
+  - "spec/lint/fixtures/**/*.cr"

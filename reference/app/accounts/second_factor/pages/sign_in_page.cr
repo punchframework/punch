@@ -1,0 +1,37 @@
+module Accounts::SecondFactor
+  struct SignInView
+    include Punch::Component
+
+    def view(v : Punch::View) : Nil
+      t = v.t.accounts.second_factor
+      v.render Invoicing::Layout.new(t.sign_in_title) do
+        v.h1 t.sign_in_title
+        v.p t.sign_in_intro
+        v.form(SignIn.action) do |form|
+          form.field :code, label: t.code, hint: t.code_hint
+          form.submit t.sign_in
+        end
+        v.p { v.a v.t.accounts.sessions.create.title, href: Accounts::Sessions::CreatePage.href }
+      end
+    end
+  end
+
+  # `GET /accounts/second_factor/sign_in`, where a sign-in goes after the
+  # password (or a mailed link) when the user has an authenticator app.
+  @[Punch::Public]
+  struct SignInPage < Punch::Page
+    struct Input
+      include Punch::Input
+    end
+
+    alias Output = SignInView
+
+    def call(input : Input, db : Punch::Reader) : Output
+      SignInView.new
+    end
+
+    def self.redirect(result : Accounts::Sessions::SignedIn) : Punch::Href
+      Home::IndexPage.href
+    end
+  end
+end
