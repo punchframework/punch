@@ -52,8 +52,10 @@ describe Punch::Asset do
 
   it "embeds every file except dotfiles, bytes unchanged" do
     table = Punch::Assets.table
-    table.entries.keys.sort!.should eq(["@acme/widgets.js", "@hotwired/turbo.js", "app.css", "application.js", "base.css",
-                                        "controllers/hello.js", "images/dot.png", "images/logo.svg", "punch/morph.js", "punch/uploads.js"])
+    # Other spec files in the same binary add the ops console's stylesheet.
+    names = table.entries.keys.reject("punch/ops.css").sort!
+    names.should eq(["@acme/widgets.js", "@hotwired/turbo.js", "app.css", "application.js", "base.css",
+                     "controllers/hello.js", "images/dot.png", "images/logo.svg", "punch/morph.js", "punch/uploads.js"])
     table.fetch("images/dot.png").body.to_slice.should eq(File.read("#{AssetsSpec::FIXTURE}/images/dot.png").to_slice)
     table.fetch("images/dot.png").content_type.should eq("image/png")
     table.fetch("app.css").content_type.should eq("text/css; charset=utf-8")
@@ -189,7 +191,10 @@ describe "A document's head" do
 
   it "leaves out scripts and the import map without Turbo or a module" do
     html = Punch::Spec.render(AssetsSpec::Layout.new(turbo: false, script: false))
-    html.should_not contain("<script")
+    # Kinds of upload declared by another spec file bring their script.
+    html.should_not contain("<script") unless Punch::Upload.used?
+    html.should_not contain(%(src="#{Punch::Assets.turbo.url}"))
+    html.should_not contain(%(src="#{Punch.asset("application.js").url}"))
     html.should contain(%(rel="stylesheet"))
     html = Punch::Spec.render(AssetsSpec::Layout.new(turbo: false))
     html.should_not contain(%(src="#{Punch::Assets.turbo.url}"))
