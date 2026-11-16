@@ -53,7 +53,7 @@ jobs:
       - name: Read toolchain pin
         id: pin
         run: grep -v '^#' toolchain.env >> "$GITHUB_OUTPUT"
-      - uses: crystal-lang/install-crystal@46e48b6238ee23b1a6ef08ec39f12fb234676006 # v1.9.3
+      - uses: crystal-lang/install-crystal@36a22e9145188eec527c96e5a789ce4b832af587 # v1.9.5
         with:
           crystal: ${{ steps.pin.outputs.CRYSTAL_VERSION }}
       - run: packaging/build-tool.sh --repository "$GITHUB_REPOSITORY" dist
